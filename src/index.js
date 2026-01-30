@@ -6,9 +6,8 @@ import { onRequestPost as processHandler } from '../functions/api/process.js';
 import { onRequestPost as aiAdviceHandler } from '../functions/api/ai-advice.js';
 import { onRequestPost as saveViewPostHandler, onRequestGet as saveViewGetHandler } from '../functions/api/save-view.js';
 
-// Import HTML content as a string
-// This will be bundled at build time
-import indexHTML from '../index.html?raw';
+// Import embedded HTML content
+import { indexHTML } from './html-content.js';
 
 export default {
   async fetch(request, env, ctx) {
