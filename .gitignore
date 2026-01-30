@@ -28,6 +28,7 @@ dist/
 build/
 *.min.js
 *.min.css
+src/html-content.js
 
 # Database (local)
 *.sqlite
