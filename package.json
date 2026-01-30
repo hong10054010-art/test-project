@@ -1,14 +1,16 @@
 {
   "name": "feedback-insights",
   "version": "1.0.0",
-  "description": "Feedback Insights Dashboard - Cloudflare Pages project",
+  "description": "Feedback Insights Dashboard - Cloudflare Workers project",
   "private": true,
+  "type": "module",
   "scripts": {
-    "deploy": "echo 'This is a Cloudflare Pages project. Deploy via GitHub integration or use: wrangler pages deploy'"
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
   },
   "keywords": [
     "cloudflare",
-    "pages",
+    "workers",
     "feedback",
     "dashboard"
   ],

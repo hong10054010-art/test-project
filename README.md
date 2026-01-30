@@ -37,14 +37,14 @@ wrangler d1 execute feedback-db --remote --file=schema.sql
 ### 4. Deploy
 
 ```bash
-wrangler pages deploy . --project-name=your-project-name
+wrangler deploy
 ```
 
 ### 5. Seed Data
 
 ```bash
-curl -X POST https://your-domain.pages.dev/api/seed
-curl -X POST https://your-domain.pages.dev/api/process
+curl -X POST https://your-worker.your-subdomain.workers.dev/api/seed
+curl -X POST https://your-worker.your-subdomain.workers.dev/api/process
 ```
 
 ## API Endpoints
@@ -59,7 +59,9 @@ curl -X POST https://your-domain.pages.dev/api/process
 
 ```
 feedback-insights/
-├── index.html          # Main dashboard
+├── src/
+│   └── index.js       # Main Worker entry point
+├── index.html          # Main dashboard (served as static asset)
 ├── functions/
 │   └── api/           # API endpoints
 │       ├── query.js
