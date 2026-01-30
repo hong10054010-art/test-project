@@ -19,26 +19,8 @@ export default {
       return handleAPI(request, env, ctx, path);
     }
 
-    // Serve index.html for root and SPA routes
-    // First try ASSETS binding (if available)
-    if (env.ASSETS) {
-      try {
-        const assetPath = path === '/' ? '/index.html' : path;
-        const assetRequest = new Request(new URL(assetPath, request.url).toString(), {
-          method: request.method,
-          headers: request.headers,
-        });
-        const assetResponse = await env.ASSETS.fetch(assetRequest);
-        
-        if (assetResponse.status !== 404) {
-          return assetResponse;
-        }
-      } catch (e) {
-        console.error('Error fetching asset:', e);
-      }
-    }
-
-    // Fallback: serve embedded HTML for SPA routes
+    // Serve embedded HTML for root and SPA routes
+    // HTML content is embedded at build time via build-html.js
     if (path === '/' || path === '/index.html' || !path.includes('.')) {
       return new Response(indexHTML, {
         headers: {
