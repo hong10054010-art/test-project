@@ -6,10 +6,12 @@
   "type": "module",
   "scripts": {
     "build": "vite build && node build-html.js",
+    "build:check": "vite build && node build-html.js && echo '構建完成！檢查 dist/ 和 src/html-content.js'",
     "deploy": "npm run build && wrangler deploy",
     "dev": "vite build --watch & wrangler dev",
     "dev:frontend": "vite",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "rm -rf dist src/html-content.js"
   },
   "keywords": [
     "cloudflare",

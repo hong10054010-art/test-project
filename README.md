@@ -58,11 +58,26 @@ npm run dev
 
 ### 5. Build and Deploy
 
+**重要**：部署前必須先構建 React 應用！
+
 ```bash
-# Build React app and embed in Worker
+# 清理舊的構建（可選）
+npm run clean
+
+# 構建 React 應用並內聯到 Worker
 npm run build
 
-# Deploy to Cloudflare
+# 驗證構建結果
+grep -i "createRoot" src/html-content.js
+
+# 部署到 Cloudflare
+npm run deploy
+```
+
+**注意**：如果 Cloudflare 上顯示的是舊的單頁面，請執行：
+```bash
+rm -rf dist/ src/html-content.js
+npm run build
 npm run deploy
 ```
 
