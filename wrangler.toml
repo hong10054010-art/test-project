@@ -2,12 +2,12 @@ name = 'test-project'
 compatibility_date = "2024-01-01"
 main = "src/index.js"
 
-# Build command: Generate html-content.js before deployment
-# This ensures the React app is built and inlined into the Worker
-build = { command = "npm run build" }
-
 # Note: [site] configuration is removed to avoid Workers Sites deployment issues
 # HTML content is embedded directly in the Worker via build-html.js
+# 
+# IMPORTANT: Always run "npm run deploy" (not "wrangler deploy" directly)
+# This ensures html-content.js is generated before deployment:
+#   npm run deploy = npm run build && wrangler deploy
 
 # D1 Database
 [[d1_databases]]
