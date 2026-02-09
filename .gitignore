@@ -30,6 +30,9 @@ build/
 *.min.css
 src/html-content.js
 
+# TypeScript
+*.tsbuildinfo
+
 # Database (local)
 *.sqlite
 *.sqlite-wal
