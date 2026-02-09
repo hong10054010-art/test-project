@@ -28,7 +28,8 @@ dist/
 build/
 *.min.js
 *.min.css
-src/html-content.js
+# Note: src/html-content.js is required for deployment, so it's committed to Git
+# src/html-content.js
 
 # TypeScript
 *.tsbuildinfo
