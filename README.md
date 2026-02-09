@@ -143,7 +143,15 @@ feedback-insights/
 
 ### 同步程式碼到 GitHub
 
-請參考 `GIT_SETUP.md` 檔案了解如何將專案程式碼同步到 GitHub 倉庫。
+```bash
+# 使用自動化腳本
+./BUILD_AND_SYNC.sh
+
+# 或手動執行
+git add .
+git commit -m "更新說明"
+git push origin main
+```
 
 **重要**：後端和資料庫繼續使用 Cloudflare 服務（D1、R2、Workers AI），不需要同步到 GitHub。
 
