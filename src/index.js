@@ -21,7 +21,8 @@ export default {
 
     // Serve embedded HTML for root and SPA routes
     // HTML content is embedded at build time via build-html.js
-    if (path === '/' || path === '/index.html' || !path.includes('.')) {
+    // For SPA routing, all non-API routes should serve the HTML
+    if (path === '/' || path === '/index.html' || (!path.startsWith('/api/') && !path.includes('.'))) {
       return new Response(indexHTML, {
         headers: {
           'Content-Type': 'text/html;charset=UTF-8',

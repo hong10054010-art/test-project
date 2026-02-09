@@ -1,26 +1,36 @@
-# Feedback Insights - Cloudflare Workers Prototype
+# Feedback Insights Dashboard
 
-A feedback analysis and visualization dashboard built with Cloudflare Workers, Workers AI, D1, R2, and KV.
+A modern feedback analysis and visualization dashboard built with React, Vite, and Cloudflare Workers. Features AI-powered insights, interactive charts, and comprehensive feedback management.
 
 ## Features
 
-- Multi-source feedback collection (support tickets, GitHub, Discord, email, Twitter)
-- AI-powered analysis (themes, sentiment, urgency, value)
-- Interactive dashboard with charts
-- Filter by product, platform, country, and time range
-- Save & Share views
-- AI recommendations
+- **Modern React UI** - Beautiful, responsive dashboard with Tailwind CSS
+- **Multi-source Feedback Collection** - Support tickets, GitHub, Discord, email, Twitter
+- **AI-Powered Analysis** - Automatic theme extraction, sentiment analysis, urgency assessment
+- **Interactive Visualizations** - Charts and graphs for trends, sentiment, and distribution
+- **Advanced Filtering** - Filter by product, platform, country, and time range
+- **GitHub Integration** - Connect to GitHub repositories (test-project)
+- **Save & Share Views** - Save filtered views and share with team
+- **AI Recommendations** - Get actionable insights from your feedback data
+
+## Tech Stack
+
+- **Frontend**: React 18, Vite, Tailwind CSS, Recharts
+- **Backend**: Cloudflare Workers
+- **Database**: Cloudflare D1 (SQLite)
+- **Storage**: Cloudflare R2
+- **AI**: Cloudflare Workers AI (Llama 3.1)
+- **State**: KV Namespace for saved views
 
 ## Quick Start
 
-### 1. Install Wrangler CLI
+### 1. Install Dependencies
 
 ```bash
-npm install -g wrangler
-wrangler login
+npm install
 ```
 
-### 2. Configure Resources
+### 2. Configure Cloudflare Resources
 
 Update `wrangler.toml` with your resource IDs:
 - D1 Database ID
@@ -34,44 +44,100 @@ wrangler d1 create feedback-db
 wrangler d1 execute feedback-db --remote --file=schema.sql
 ```
 
-### 4. Deploy
+### 4. Development
 
+For frontend development (with hot reload):
 ```bash
-wrangler deploy
+npm run dev:frontend
 ```
 
-### 5. Seed Data
+For full-stack development:
+```bash
+npm run dev
+```
+
+### 5. Build and Deploy
+
+```bash
+# Build React app and embed in Worker
+npm run build
+
+# Deploy to Cloudflare
+npm run deploy
+```
+
+### 6. Seed Data
+
+After deployment, seed the database with mock data:
 
 ```bash
 curl -X POST https://your-worker.your-subdomain.workers.dev/api/seed
 curl -X POST https://your-worker.your-subdomain.workers.dev/api/process
 ```
 
-## API Endpoints
-
-- `GET /api/query` - Query feedback data
-- `POST /api/seed` - Generate mock data
-- `POST /api/process` - Process feedback with AI
-- `POST /api/ai-advice` - Get AI recommendations
-- `POST /api/save-view` - Save filtered view
-
 ## Project Structure
 
 ```
 feedback-insights/
 ├── src/
-│   └── index.js       # Main Worker entry point
-├── index.html          # Main dashboard (served as static asset)
+│   ├── app/
+│   │   ├── App.tsx                    # Main app component
+│   │   └── components/
+│   │       ├── OverviewPage.tsx        # Dashboard overview
+│   │       ├── KeywordsPage.tsx        # Keyword analysis
+│   │       ├── FeedbackAnalysisPage.tsx # Raw feedback data
+│   │       ├── AIInsightsPage.tsx      # AI-generated insights
+│   │       ├── ReportsPage.tsx         # Report builder
+│   │       ├── SettingsPage.tsx        # Settings & integrations
+│   │       └── ui/                     # UI components (shadcn/ui)
+│   ├── lib/
+│   │   └── api.ts                      # API service layer
+│   ├── styles/                         # Global styles
+│   ├── main.tsx                        # React entry point
+│   ├── index.js                        # Worker entry point
+│   └── html-content.js                 # Embedded HTML (auto-generated)
 ├── functions/
-│   └── api/           # API endpoints
-│       ├── query.js
-│       ├── seed.js
-│       ├── process.js
-│       ├── ai-advice.js
-│       └── save-view.js
-├── schema.sql         # Database schema
-└── wrangler.toml      # Cloudflare configuration
+│   └── api/                            # API endpoints
+│       ├── query.js                    # Query feedback data
+│       ├── seed.js                     # Generate mock data
+│       ├── process.js                  # AI processing
+│       ├── ai-advice.js                # AI recommendations
+│       └── save-view.js                # Save/load views
+├── dist/                               # Vite build output
+├── index.html                          # HTML template
+├── vite.config.ts                      # Vite configuration
+├── build-html.js                       # Build script
+├── schema.sql                          # Database schema
+└── wrangler.toml                       # Cloudflare configuration
 ```
+
+## API Endpoints
+
+- `GET /api/query` - Query feedback data with filters
+- `POST /api/seed` - Generate mock feedback data
+- `POST /api/process` - Process feedback with AI analysis
+- `POST /api/ai-advice` - Get AI recommendations
+- `POST /api/save-view` - Save a filtered view
+- `GET /api/save-view` - Get all saved views
+
+## GitHub 倉庫
+
+本專案的程式碼存放在 GitHub 倉庫：
+- **倉庫地址**：https://github.com/hong10054010-art/test-project
+- **設定頁面**：可以在 Settings → Integrations 中查看 GitHub 倉庫連結
+
+### 同步程式碼到 GitHub
+
+請參考 `GIT_SETUP.md` 檔案了解如何將專案程式碼同步到 GitHub 倉庫。
+
+**重要**：後端和資料庫繼續使用 Cloudflare 服務（D1、R2、Workers AI），不需要同步到 GitHub。
+
+## Development Notes
+
+- The app uses mock data by default, with API calls as fallback
+- All static assets are inlined during build for Cloudflare Workers deployment
+- The frontend is a SPA (Single Page Application) with client-side routing
+- API calls automatically fall back to mock data if the backend is unavailable
 
 ## License
 
