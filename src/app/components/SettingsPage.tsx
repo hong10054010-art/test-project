@@ -334,7 +334,7 @@ export function SettingsPage() {
                     <p className="text-sm text-muted-foreground">
                       {githubConnected ? (
                         <>
-                          專案程式碼倉庫:{" "}
+                          Project code repository:{" "}
                           <a 
                             href={`https://github.com/${githubRepo}`} 
                             target="_blank" 
@@ -345,12 +345,12 @@ export function SettingsPage() {
                           </a>
                         </>
                       ) : (
-                        `連接到 GitHub 倉庫: ${githubRepo}`
+                        `Connect to GitHub repository: ${githubRepo}`
                       )}
                     </p>
                     {githubConnected && (
                       <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                        <span className="text-[#84cc16]">✓</span> 專案程式碼已連接到 GitHub 倉庫
+                        <span className="text-[#84cc16]">✓</span> Project code is connected to GitHub repository
                       </p>
                     )}
                   </div>
@@ -360,7 +360,7 @@ export function SettingsPage() {
                   className={githubConnected ? "border-2" : "bg-primary text-primary-foreground hover:bg-primary/90"}
                   onClick={handleGithubConnect}
                 >
-                  {githubConnected ? "中斷連接" : "連接"}
+                  {githubConnected ? "Disconnect" : "Connect"}
                 </Button>
               </div>
 

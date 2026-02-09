@@ -3,7 +3,9 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown, MessageSquare, AlertTriangle, Hash, Sparkles, ThumbsUp, ThumbsDown, Minus, Save, Share2, RotateCw, Download, Filter, Bookmark } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { queryFeedback, saveView, getSavedViews } from "../../lib/api";
+import { toast } from "sonner";
 
 // Mock data
 const trendData = [
@@ -74,12 +76,96 @@ interface OverviewPageProps {
 
 export function OverviewPage({ onNavigate }: OverviewPageProps) {
   const [watchedKeywords, setWatchedKeywords] = useState<string[]>(["slow loading", "pricing"]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const response = await queryFeedback({ timeRange: "30" });
+      if (response.ok) {
+        // Data loaded successfully
+        console.log("Overview data loaded:", response);
+      }
+    } catch (error) {
+      console.error("Failed to load overview data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const result = await saveView("Overview Dashboard", { timeRange: "30" });
+      if (result.ok) {
+        toast.success("View saved successfully");
+      } else {
+        toast.error("Failed to save view");
+      }
+    } catch (error) {
+      toast.error("Failed to save view");
+    }
+  };
+
+  const handleShare = () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: "Feedback Insights Dashboard",
+        text: "Check out this feedback analytics dashboard",
+        url: url
+      }).catch(() => {
+        // Fallback to clipboard
+        navigator.clipboard.writeText(url);
+        toast.success("Link copied to clipboard");
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard");
+    }
+  };
+
+  const handleRefresh = () => {
+    loadData();
+    toast.success("Data refreshed");
+  };
+
+  const handleFilter = () => {
+    toast.info("Filter panel coming soon");
+  };
+
+  const handleExport = () => {
+    const data = {
+      metrics: {
+        totalMentions: 8234,
+        positivePercent: 68,
+        negativePercent: 10,
+        spikeAlerts: 3
+      },
+      trends: trendData,
+      keywords: topKeywords,
+      sectors: sectorData
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `overview-export-${new Date().toISOString().split("T")[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Data exported successfully");
+  };
 
   const toggleWatchlist = (keyword: string) => {
     if (watchedKeywords.includes(keyword)) {
       setWatchedKeywords(watchedKeywords.filter(k => k !== keyword));
+      toast.info(`Removed "${keyword}" from watchlist`);
     } else {
       setWatchedKeywords([...watchedKeywords, keyword]);
+      toast.success(`Added "${keyword}" to watchlist`);
     }
   };
 
@@ -109,23 +195,49 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
           <p className="text-muted-foreground mt-2">Real-time feedback analytics and AI insights</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" className="border-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-2"
+            onClick={handleSave}
+            disabled={loading}
+          >
             <Save className="h-4 w-4 mr-2" />
             Save
           </Button>
-          <Button variant="outline" size="sm" className="border-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-2"
+            onClick={handleShare}
+          >
             <Share2 className="h-4 w-4 mr-2" />
             Share
           </Button>
-          <Button variant="outline" size="sm" className="border-2">
-            <RotateCw className="h-4 w-4 mr-2" />
-            Renew
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-2"
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            <RotateCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
           </Button>
-          <Button variant="outline" size="sm" className="border-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-2"
+            onClick={handleFilter}
+          >
             <Filter className="h-4 w-4 mr-2" />
             Filter
           </Button>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" size="sm">
+          <Button 
+            className="bg-primary text-primary-foreground hover:bg-primary/90" 
+            size="sm"
+            onClick={handleExport}
+          >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>

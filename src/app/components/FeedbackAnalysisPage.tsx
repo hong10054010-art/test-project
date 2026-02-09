@@ -6,9 +6,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Checkbox } from "./ui/checkbox";
 import { Search, Filter, Download, ThumbsUp, ThumbsDown, Minus, Tag, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { queryFeedback, processFeedback } from "../../lib/api";
+import { toast } from "sonner";
 
-const feedbackData = [
+// Interface for feedback data
+interface FeedbackItem {
+  id: string;
+  date: string;
+  user: string;
+  source: string;
+  sentiment: string;
+  rating: number;
+  category: string;
+  tags: string[];
+  text: string;
+  verified: boolean;
+}
+
+// Mock data as fallback
+const mockFeedbackData: FeedbackItem[] = [
   {
     id: "FB-8234",
     date: "2026-02-09 14:23",
@@ -117,18 +134,6 @@ const feedbackData = [
     text: "Slack integration works perfectly. Setup was straightforward and notifications are timely.",
     verified: true
   },
-  {
-    id: "FB-8225",
-    date: "2026-02-08 10:22",
-    user: "Tom Brown",
-    source: "Email",
-    sentiment: "neutral",
-    rating: 3,
-    category: "UI/UX",
-    tags: ["Navigation", "Learning Curve"],
-    text: "Interface is nice but took some time to learn where everything is located.",
-    verified: false
-  },
 ];
 
 export function FeedbackAnalysisPage() {
@@ -138,6 +143,43 @@ export function FeedbackAnalysisPage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [feedbackData, setFeedbackData] = useState<FeedbackItem[]>(mockFeedbackData);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Load feedback data from API
+  useEffect(() => {
+    loadFeedbackData();
+  }, [filterSentiment, filterSource, filterCategory, currentPage]);
+
+  const loadFeedbackData = async () => {
+    setLoading(true);
+    try {
+      const response = await queryFeedback({
+        source: filterSource !== "all" ? filterSource : undefined,
+        timeRange: "30"
+      });
+      
+      if (response.ok && response.charts) {
+        // TODO: Map API response to FeedbackItem format
+        // For now, keep using mock data
+        setFeedbackData(mockFeedbackData);
+        setTotalPages(Math.ceil((response.totalCount || 0) / 10) || 1);
+      } else {
+        // Fallback to mock data
+        setFeedbackData(mockFeedbackData);
+        setTotalPages(1);
+      }
+    } catch (error) {
+      console.error("Failed to load feedback:", error);
+      // Fallback to mock data
+      setFeedbackData(mockFeedbackData);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredFeedback = feedbackData.filter(item => {
     const matchesSearch = 
@@ -177,11 +219,63 @@ export function FeedbackAnalysisPage() {
     }
   };
 
+  const handleExport = () => {
+    const csv = [
+      ["ID", "Date", "User", "Source", "Sentiment", "Rating", "Category", "Tags", "Text"].join(","),
+      ...filteredFeedback.map(item => [
+        item.id,
+        item.date,
+        item.user,
+        item.source,
+        item.sentiment,
+        item.rating,
+        item.category,
+        item.tags.join(";"),
+        `"${item.text.replace(/"/g, '""')}"`
+      ].join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `feedback-export-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Feedback exported successfully");
+  };
+
+  const handleTagSelected = async () => {
+    if (selectedRows.length === 0) {
+      toast.error("Please select feedback items to tag");
+      return;
+    }
+    toast.info(`Tagging ${selectedRows.length} items...`);
+    // TODO: Implement tagging API
+  };
+
+  const handleProcessSelected = async () => {
+    if (selectedRows.length === 0) {
+      toast.error("Please select feedback items to process");
+      return;
+    }
+    toast.info(`Processing ${selectedRows.length} items with AI...`);
+    try {
+      for (const id of selectedRows) {
+        await processFeedback(id);
+      }
+      toast.success("Feedback processed successfully");
+      loadFeedbackData();
+    } catch (error) {
+      toast.error("Failed to process feedback");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h1>反饋 / 提及 (原始資料)</h1>
-        <p className="text-muted-foreground mt-2">完整的反饋資料庫，支援進階篩選功能</p>
+        <h1>Feedback / Mentions (Raw Data)</h1>
+        <p className="text-muted-foreground mt-2">Complete feedback database with advanced filtering capabilities</p>
       </div>
 
       {/* Search and Actions */}
@@ -209,13 +303,17 @@ export function FeedbackAnalysisPage() {
             variant="outline" 
             className="border-2"
             disabled={selectedRows.length === 0}
+            onClick={handleTagSelected}
           >
             <Tag className="h-4 w-4 mr-2" />
-            標籤 ({selectedRows.length})
+            Tag ({selectedRows.length})
           </Button>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button 
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={handleExport}
+          >
             <Download className="h-4 w-4 mr-2" />
-            匯出
+            Export
           </Button>
         </div>
       </div>
@@ -372,7 +470,15 @@ export function FeedbackAnalysisPage() {
                     <p className="text-sm line-clamp-2">{item.text}</p>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm" title="查看詳情">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      title="View Details"
+                      onClick={() => {
+                        toast.info(`Viewing details for ${item.id}`);
+                        // TODO: Implement detail view modal
+                      }}
+                    >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -385,12 +491,26 @@ export function FeedbackAnalysisPage() {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Page 1 of 824</p>
+        <p className="text-sm text-muted-foreground">
+          Page {currentPage} of {totalPages} ({filteredFeedback.length} items)
+        </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="border-2" disabled>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-2" 
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          >
             Previous
           </Button>
-          <Button variant="outline" size="sm" className="border-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-2"
+            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          >
             Next
           </Button>
         </div>

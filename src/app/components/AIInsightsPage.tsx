@@ -3,6 +3,9 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
 import { Brain, AlertTriangle, TrendingUp, Lightbulb, Target, Sparkles, Shield, DollarSign, Users, Zap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getAIAdvice, queryFeedback } from "../../lib/api";
+import { toast } from "sonner";
 
 const autoSummary = {
   period: "Last 7 Days",
@@ -137,6 +140,42 @@ const recommendations = [
 ];
 
 export function AIInsightsPage() {
+  const [loading, setLoading] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState(recommendations);
+
+  useEffect(() => {
+    loadAIInsights();
+  }, []);
+
+  const loadAIInsights = async () => {
+    setLoading(true);
+    try {
+      const response = await queryFeedback({ timeRange: "7" });
+      if (response.ok && response.charts) {
+        const aiResponse = await getAIAdvice({ timeRange: "7" }, response.charts);
+        if (aiResponse.ok && aiResponse.advice) {
+          // Update recommendations with AI-generated advice
+          console.log("AI insights loaded:", aiResponse.advice);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load AI insights:", error);
+      toast.error("Failed to load AI insights. Using cached data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApproveRecommendation = (recId: number) => {
+    toast.success(`Recommendation ${recId} approved and assigned`);
+    // TODO: Implement approval API
+  };
+
+  const handleViewDetails = (recId: number) => {
+    toast.info(`Viewing details for recommendation ${recId}`);
+    // TODO: Implement detail view
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
@@ -350,10 +389,17 @@ export function AIInsightsPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button 
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => handleApproveRecommendation(rec.id)}
+                  >
                     Approve & Assign
                   </Button>
-                  <Button variant="outline" className="border-2">
+                  <Button 
+                    variant="outline" 
+                    className="border-2"
+                    onClick={() => handleViewDetails(rec.id)}
+                  >
                     View Details
                   </Button>
                 </div>

@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { FileText, Download, Eye, Calendar, Clock, BarChart3, FileBarChart, Plus, Save, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { queryFeedback } from "../../lib/api";
+import { toast } from "sonner";
 
 const previewData = [
   { date: "Week 1", value: 245 },
@@ -65,6 +67,61 @@ export function ReportsPage() {
       setter(list.filter(i => i !== item));
     } else {
       setter([...list, item]);
+    }
+  };
+
+  const handlePreview = async () => {
+    try {
+      const response = await queryFeedback({ timeRange: selectedTimeRange.replace("last", "") });
+      if (response.ok) {
+        toast.success("Report preview generated");
+      }
+    } catch (error) {
+      toast.error("Failed to generate preview");
+    }
+  };
+
+  const handleSaveReport = () => {
+    if (!reportName.trim()) {
+      toast.error("Please enter a report name");
+      return;
+    }
+    toast.success(`Report "${reportName}" saved`);
+    // TODO: Implement save report API
+  };
+
+  const handleExportPDF = () => {
+    toast.info("PDF export coming soon");
+    // TODO: Implement PDF export
+  };
+
+  const handleExportPPT = () => {
+    toast.info("PPT export coming soon");
+    // TODO: Implement PPT export
+  };
+
+  const handleExportCSV = () => {
+    const csv = [
+      ["Metric", "Value"].join(","),
+      ["Total Mentions", "8,234"].join(","),
+      ["Positive %", "68%"].join(","),
+      ["Growth", "+12.5%"].join(",")
+    ].join("\n");
+    
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${reportName || "report"}-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Report exported as CSV");
+  };
+
+  const handleDeleteReport = (id: number) => {
+    if (window.confirm("Are you sure you want to delete this report?")) {
+      toast.success("Report deleted");
+      // TODO: Implement delete API
     }
   };
 
@@ -178,11 +235,18 @@ export function ReportsPage() {
                 </div>
 
                 <div className="flex gap-2 mt-6 pt-6 border-t">
-                  <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button 
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={handlePreview}
+                  >
                     <Eye className="h-4 w-4 mr-2" />
                     Preview
                   </Button>
-                  <Button variant="outline" className="flex-1 border-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 border-2"
+                    onClick={handleSaveReport}
+                  >
                     <Save className="h-4 w-4 mr-2" />
                     Save
                   </Button>
@@ -196,15 +260,29 @@ export function ReportsPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h3>Live Preview</h3>
                   <div className="flex gap-2">
-                    <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Button 
+                      size="sm" 
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={handleExportPDF}
+                    >
                       <Download className="h-4 w-4 mr-2" />
                       Export PDF
                     </Button>
-                    <Button variant="outline" size="sm" className="border-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-2"
+                      onClick={handleExportPPT}
+                    >
                       <Download className="h-4 w-4 mr-2" />
                       Export PPT
                     </Button>
-                    <Button variant="outline" size="sm" className="border-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-2"
+                      onClick={handleExportCSV}
+                    >
                       <Download className="h-4 w-4 mr-2" />
                       Export CSV
                     </Button>
@@ -354,7 +432,12 @@ export function ReportsPage() {
                     <Button variant="outline" size="sm" className="border-2">
                       <Download className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" className="border-2 text-[#ef4444] hover:text-[#ef4444]">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-2 text-[#ef4444] hover:text-[#ef4444]"
+                      onClick={() => handleDeleteReport(report.id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
