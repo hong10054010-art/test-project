@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { FileText, Download, Eye, Calendar, Clock, BarChart3, FileBarChart, Plus, Save, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { queryFeedback } from "../../lib/api";
+import { queryFeedback, getSavedViews, saveView } from "../../lib/api";
 import { toast } from "sonner";
 
 const previewData = [
@@ -63,10 +63,37 @@ export function ReportsPage() {
   const [reportName, setReportName] = useState("");
   const [reportData, setReportData] = useState<any>(null);
   const [previewData, setPreviewData] = useState<any[]>([]);
+  const [savedReports, setSavedReports] = useState<any[]>([]);
 
   useEffect(() => {
     loadReportData();
+    loadSavedReports();
   }, [selectedTimeRange, selectedSectors, selectedKeywords]);
+
+  const loadSavedReports = async () => {
+    try {
+      const response = await getSavedViews();
+      if (response.ok && response.views) {
+        const reports = response.views.map((view: any, index: number) => ({
+          id: view.id || `report_${index + 1}`,
+          name: view.name || `Saved Report ${index + 1}`,
+          description: `Time range: ${view.filters?.timeRange || 'N/A'} days${view.filters?.keywords ? `, Keywords: ${view.filters.keywords}` : ''}${view.filters?.sectors ? `, Sectors: ${view.filters.sectors}` : ''}`,
+          schedule: "Manual",
+          lastRun: view.createdAt ? new Date(view.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          format: "PDF",
+          recipients: [],
+          filters: view.filters
+        }));
+        setSavedReports(reports);
+      } else if (response.ok && !response.views) {
+        // No views yet
+        setSavedReports([]);
+      }
+    } catch (error) {
+      console.error("Failed to load saved reports:", error);
+      setSavedReports([]);
+    }
+  };
 
   const loadReportData = async () => {
     try {
@@ -115,13 +142,27 @@ export function ReportsPage() {
     }
   };
 
-  const handleSaveReport = () => {
+  const handleSaveReport = async () => {
     if (!reportName.trim()) {
       toast.error("Please enter a report name");
       return;
     }
-    toast.success(`Report "${reportName}" saved`);
-    // TODO: Implement save report API
+    try {
+      const result = await saveView(reportName, {
+        timeRange: selectedTimeRange.replace("last", ""),
+        keywords: selectedKeywords,
+        sectors: selectedSectors
+      });
+      if (result.ok) {
+        toast.success(`Report "${reportName}" saved to Saved Reports`);
+        setReportName("");
+        loadSavedReports();
+      } else {
+        toast.error("Failed to save report");
+      }
+    } catch (error) {
+      toast.error("Failed to save report");
+    }
   };
 
   const handleExportPDF = () => {
@@ -450,7 +491,7 @@ export function ReportsPage() {
         {/* Saved Reports */}
         <TabsContent value="saved" className="space-y-4 mt-6">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-muted-foreground">{savedReports.length} scheduled reports</p>
+            <p className="text-sm text-muted-foreground">{savedReports.length} saved reports</p>
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
               New Schedule
@@ -458,7 +499,12 @@ export function ReportsPage() {
           </div>
 
           <div className="space-y-4">
-            {savedReports.map((report) => (
+            {savedReports.length === 0 ? (
+              <Card className="p-6 border-2 text-center">
+                <p className="text-muted-foreground">No saved reports yet. Save a report from the Report Builder to see it here.</p>
+              </Card>
+            ) : (
+              savedReports.map((report) => (
               <Card key={report.id} className="p-6 border-2 hover:border-primary transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
@@ -501,7 +547,8 @@ export function ReportsPage() {
                   </div>
                 </div>
               </Card>
-            ))}
+              ))
+            )}
           </div>
         </TabsContent>
 

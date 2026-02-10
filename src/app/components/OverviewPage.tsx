@@ -10,68 +10,7 @@ import { useState, useEffect } from "react";
 import { queryFeedback, saveView, getSavedViews } from "../../lib/api";
 import { toast } from "sonner";
 
-// Mock data
-const trendData = [
-  { date: "Feb 1", mentions: 145, sentiment: 72 },
-  { date: "Feb 2", mentions: 167, sentiment: 68 },
-  { date: "Feb 3", mentions: 189, sentiment: 75 },
-  { date: "Feb 4", mentions: 234, sentiment: 81 },
-  { date: "Feb 5", mentions: 298, sentiment: 85 },
-  { date: "Feb 6", mentions: 245, sentiment: 79 },
-  { date: "Feb 7", mentions: 267, sentiment: 82 },
-  { date: "Feb 8", mentions: 312, sentiment: 88 },
-  { date: "Feb 9", mentions: 356, sentiment: 92 },
-];
-
-const topKeywords = [
-  { 
-    keyword: "customer service", 
-    mentions: 1247, 
-    growth: "+23%", 
-    sentiment: "positive",
-    trend: [45, 52, 58, 62, 71, 78, 82],
-    watched: false
-  },
-  { 
-    keyword: "slow loading", 
-    mentions: 892, 
-    growth: "+15%", 
-    sentiment: "negative",
-    trend: [32, 38, 42, 48, 55, 61, 65],
-    watched: true
-  },
-  { 
-    keyword: "easy to use", 
-    mentions: 756, 
-    growth: "+8%", 
-    sentiment: "positive",
-    trend: [40, 41, 43, 46, 48, 52, 55],
-    watched: false
-  },
-  { 
-    keyword: "pricing", 
-    mentions: 634, 
-    growth: "-3%", 
-    sentiment: "neutral",
-    trend: [50, 49, 47, 45, 44, 42, 41],
-    watched: true
-  },
-  { 
-    keyword: "integration", 
-    mentions: 589, 
-    growth: "+31%", 
-    sentiment: "positive",
-    trend: [25, 28, 35, 42, 48, 53, 58],
-    watched: false
-  },
-];
-
-const sectorData = [
-  { sector: "Technology", mentions: 2341, positive: 68, negative: 12, neutral: 20 },
-  { sector: "Healthcare", mentions: 1892, positive: 72, negative: 8, neutral: 20 },
-  { sector: "Finance", mentions: 1567, positive: 61, negative: 15, neutral: 24 },
-  { sector: "Retail", mentions: 1234, positive: 58, negative: 18, neutral: 24 },
-];
+// All data is now loaded from D1 database via API
 
 interface OverviewPageProps {
   onNavigate?: (page: string, filter?: string) => void;
@@ -165,16 +104,22 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
 
   const handleSave = async () => {
     try {
-      const reportName = prompt("Enter report name:", "Overview Dashboard");
+      const reportName = prompt("Enter report name:", `Overview Dashboard - ${new Date().toLocaleDateString()}`);
       if (!reportName) return;
       
       const result = await saveView(reportName, { 
         timeRange: filterTimeRange,
-        keywords: filterKeywords,
-        sectors: filterSectors
+        keywords: filterKeywords.join(','),
+        sectors: filterSectors.join(',')
       });
       if (result.ok) {
-        toast.success(`Report "${reportName}" saved to Saved Reports`);
+        toast.success(`Report "${reportName}" saved to Saved Reports. Check Reports page to view it.`);
+        // Navigate to reports page if onNavigate is available
+        if (onNavigate) {
+          setTimeout(() => {
+            onNavigate("reports");
+          }, 1500);
+        }
       } else {
         toast.error("Failed to save report");
       }

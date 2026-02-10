@@ -30,6 +30,8 @@ export default function App() {
     if (page === "keywords") {
       setCurrentPage("keywords");
       setKeywordFilter(filter);
+    } else if (page === "reports") {
+      setCurrentPage("reports");
     }
   };
 
