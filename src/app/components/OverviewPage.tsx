@@ -35,7 +35,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [filterTimeRange]);
 
   const loadData = async () => {
     setLoading(true);
@@ -44,7 +44,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
       if (response.ok && response.charts) {
         setOverviewData(response);
         
-        // Calculate metrics
+        // Calculate metrics - use the totalCount from API response
         const total = response.totalCount || 0;
         const sentimentData = response.charts.bySentiment || [];
         const positive = sentimentData.find((s: any) => s.key === 'positive')?.count || 0;
