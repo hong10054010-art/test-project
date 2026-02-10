@@ -1,0 +1,6 @@
+/* Override tabs active state for Settings and Reports pages */
+.tab-green-active[data-state="active"] {
+  background-color: #4d7c0f !important;
+  color: white !important;
+  border-color: transparent !important;
+}
