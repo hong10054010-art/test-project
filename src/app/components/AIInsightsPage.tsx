@@ -7,155 +7,140 @@ import { useState, useEffect } from "react";
 import { getAIAdvice, queryFeedback } from "../../lib/api";
 import { toast } from "sonner";
 
-const autoSummary = {
+// Default/fallback data structure
+const defaultAutoSummary = {
   period: "Last 7 Days",
-  totalMentions: 8234,
-  sentimentShift: "+5.2%",
-  keyTheme: "Customer service excellence driving positive sentiment",
-  confidence: 94
+  totalMentions: 0,
+  sentimentShift: "0%",
+  keyTheme: "Analyzing feedback data...",
+  confidence: 0
 };
-
-const topRisks = [
-  {
-    id: 1,
-    title: "Performance Degradation Alert",
-    description: "Loading time complaints increased 31% in the last 48 hours. Users reporting 5-10 second delays on dashboard load.",
-    severity: "critical",
-    impact: "High",
-    affectedUsers: "~2,100",
-    trend: "increasing",
-    confidence: 92,
-    recommendation: "Immediate performance audit recommended. Check server load and database query optimization."
-  },
-  {
-    id: 2,
-    title: "Mobile App Stability Issues",
-    description: "Crash reports up 18% on iOS devices. Pattern detected in users running iOS 17.2+.",
-    severity: "high",
-    impact: "Medium",
-    affectedUsers: "~450",
-    trend: "stable",
-    confidence: 87,
-    recommendation: "QA team should prioritize iOS compatibility testing for next release."
-  },
-  {
-    id: 3,
-    title: "Integration Documentation Gap",
-    description: "CRM integration queries increased 23%. Users struggle with Salesforce connector setup.",
-    severity: "medium",
-    impact: "Medium",
-    affectedUsers: "~320",
-    trend: "increasing",
-    confidence: 89,
-    recommendation: "Expand integration guide with video tutorials and step-by-step screenshots."
-  }
-];
-
-const opportunities = [
-  {
-    id: 1,
-    title: "Healthcare Sector Expansion",
-    description: "Healthcare users show 72% positive sentiment, 15% higher than average. High engagement with compliance features.",
-    potential: "high",
-    effort: "medium",
-    roi: "185%",
-    confidence: 91,
-    nextSteps: "Develop healthcare-specific feature package and compliance certifications."
-  },
-  {
-    id: 2,
-    title: "Dark Mode Feature Request",
-    description: "Dark mode mentioned in 42 requests this week (3x increase). Users cite eye strain during long sessions.",
-    potential: "medium",
-    effort: "low",
-    roi: "120%",
-    confidence: 94,
-    nextSteps: "Add to Q1 roadmap. Estimated 2 week development time."
-  },
-  {
-    id: 3,
-    title: "API Partnership Interest",
-    description: "12 enterprise clients requested public API access. Average client value: $15k/year.",
-    potential: "high",
-    effort: "high",
-    roi: "240%",
-    confidence: 86,
-    nextSteps: "Conduct technical feasibility study and develop API monetization strategy."
-  },
-  {
-    id: 4,
-    title: "Customer Service Excellence",
-    description: "Support team net promoter score at 89. Opportunity to showcase as competitive advantage.",
-    potential: "medium",
-    effort: "low",
-    roi: "95%",
-    confidence: 96,
-    nextSteps: "Create case studies and feature customer testimonials in marketing materials."
-  }
-];
-
-const recommendations = [
-  {
-    id: 1,
-    title: "Priority 1: Address Performance Issues",
-    description: "Critical: Resolve loading time issues within 48 hours to prevent negative sentiment cascade.",
-    impact: "Critical",
-    timeline: "Immediate",
-    resources: "DevOps + Backend Team",
-    expectedOutcome: "Reduce complaints by 60%, improve retention by 8%",
-    actions: [
-      "Audit database queries and add necessary indexes",
-      "Implement CDN for static assets",
-      "Enable server-side caching for analytics data"
-    ]
-  },
-  {
-    id: 2,
-    title: "Quick Win: Launch Dark Mode",
-    description: "High demand, low effort feature that addresses user pain point and demonstrates responsiveness.",
-    impact: "Medium",
-    timeline: "2 weeks",
-    resources: "Frontend Team",
-    expectedOutcome: "Increase satisfaction by 12%, reduce eye strain complaints",
-    actions: [
-      "Design dark theme color palette",
-      "Implement theme toggle in settings",
-      "Test across all major components"
-    ]
-  },
-  {
-    id: 3,
-    title: "Strategic: Healthcare Market Penetration",
-    description: "Capitalize on strong healthcare sentiment with targeted feature development.",
-    impact: "High",
-    timeline: "3 months",
-    resources: "Product + Marketing Teams",
-    expectedOutcome: "20% increase in healthcare sector revenue",
-    actions: [
-      "Develop HIPAA compliance features",
-      "Create healthcare-specific dashboards",
-      "Launch targeted marketing campaign"
-    ]
-  }
-];
 
 export function AIInsightsPage() {
   const [loading, setLoading] = useState(false);
-  const [aiRecommendations, setAiRecommendations] = useState(recommendations);
+  const [timeRange, setTimeRange] = useState("7");
+  const [autoSummary, setAutoSummary] = useState(defaultAutoSummary);
+  const [topRisks, setTopRisks] = useState<any[]>([]);
+  const [opportunities, setOpportunities] = useState<any[]>([]);
+  const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
 
   useEffect(() => {
     loadAIInsights();
-  }, []);
+  }, [timeRange]);
 
   const loadAIInsights = async () => {
     setLoading(true);
     try {
-      const response = await queryFeedback({ timeRange: "7" });
+      const response = await queryFeedback({ timeRange });
       if (response.ok && response.charts) {
-        const aiResponse = await getAIAdvice({ timeRange: "7" }, response.charts);
+        const charts = response.charts;
+        const totalCount = response.totalCount || 0;
+        
+        // Calculate auto summary
+        const sentimentData = charts.bySentiment || [];
+        const positive = sentimentData.find((s: any) => s.key === 'positive')?.count || 0;
+        const negative = sentimentData.find((s: any) => s.key === 'negative')?.count || 0;
+        const neutral = sentimentData.find((s: any) => s.key === 'neutral')?.count || 0;
+        const totalWithSentiment = positive + negative + neutral;
+        const positivePercent = totalWithSentiment > 0 ? (positive / totalWithSentiment) * 100 : 0;
+        const negativePercent = totalWithSentiment > 0 ? (negative / totalWithSentiment) * 100 : 0;
+        
+        // Get top theme
+        const topTheme = charts.byTheme?.[0];
+        const keyTheme = topTheme ? `${topTheme.key} (${topTheme.count} mentions)` : "No dominant theme";
+        
+        // Calculate sentiment shift (simplified - compare positive vs negative)
+        const sentimentShift = totalWithSentiment > 0 
+          ? ((positivePercent - negativePercent) > 0 ? '+' : '') + (positivePercent - negativePercent).toFixed(1) + '%'
+          : '0%';
+        
+        setAutoSummary({
+          period: timeRange === "7" ? "Last 7 Days" : 
+                  timeRange === "30" ? "Last 30 Days" :
+                  timeRange === "90" ? "Last 90 Days" : "Last Year",
+          totalMentions: totalCount,
+          sentimentShift,
+          keyTheme,
+          confidence: totalCount > 0 ? Math.min(95, Math.max(70, 100 - (totalCount / 100))) : 0
+        });
+
+        // Generate risks from high urgency + negative sentiment themes
+        const urgencyData = charts.byUrgency || [];
+        const highUrgency = urgencyData.find((u: any) => u.key === 'high' || u.key === 'critical')?.count || 0;
+        const negativeThemes = charts.byTheme?.filter((t: any) => {
+          // Filter themes that might indicate problems
+          const themeLower = t.key.toLowerCase();
+          return themeLower.includes('issue') || themeLower.includes('problem') || 
+                 themeLower.includes('bug') || themeLower.includes('error') ||
+                 themeLower.includes('deployment') || themeLower.includes('performance');
+        }) || [];
+        
+        const risks = negativeThemes.slice(0, 3).map((theme: any, idx: number) => ({
+          id: idx + 1,
+          title: `${theme.key} Alert`,
+          description: `${theme.key} has ${theme.count} mentions. This represents ${((theme.count / totalCount) * 100).toFixed(1)}% of all feedback.`,
+          severity: theme.count > totalCount * 0.1 ? "critical" : theme.count > totalCount * 0.05 ? "high" : "medium",
+          impact: theme.count > totalCount * 0.1 ? "High" : "Medium",
+          affectedUsers: `~${Math.round(theme.count * 1.5)}`,
+          trend: "increasing",
+          confidence: Math.min(95, 70 + (theme.count / totalCount) * 25),
+          recommendation: `Address "${theme.key}" theme immediately. Consider creating a dedicated task force to investigate and resolve related issues.`
+        }));
+        setTopRisks(risks.length > 0 ? risks : []);
+
+        // Generate opportunities from positive sentiment + high value themes
+        const valueData = charts.byValue || [];
+        const highValue = valueData.find((v: any) => v.key === 'high')?.count || 0;
+        const positiveThemes = charts.byTheme?.filter((t: any) => {
+          const themeLower = t.key.toLowerCase();
+          return !themeLower.includes('issue') && !themeLower.includes('problem') &&
+                 !themeLower.includes('bug') && !themeLower.includes('error');
+        }) || [];
+        
+        const opps = positiveThemes.slice(0, 4).map((theme: any, idx: number) => ({
+          id: idx + 1,
+          title: `${theme.key} Opportunity`,
+          description: `${theme.key} has ${theme.count} mentions with positive engagement. This represents ${((theme.count / totalCount) * 100).toFixed(1)}% of all feedback.`,
+          potential: theme.count > totalCount * 0.15 ? "high" : "medium",
+          effort: idx % 2 === 0 ? "low" : "medium",
+          roi: `${Math.round(100 + (theme.count / totalCount) * 100)}%`,
+          confidence: Math.min(96, 80 + (theme.count / totalCount) * 16),
+          nextSteps: `Capitalize on "${theme.key}" theme. Consider expanding related features and creating targeted marketing campaigns.`
+        }));
+        setOpportunities(opps.length > 0 ? opps : []);
+
+        // Get AI recommendations
+        const aiResponse = await getAIAdvice({ timeRange }, charts);
         if (aiResponse.ok && aiResponse.advice) {
-          // Update recommendations with AI-generated advice
-          console.log("AI insights loaded:", aiResponse.advice);
+          const recommendations = aiResponse.advice.map((item: any, idx: number) => ({
+            id: idx + 1,
+            title: item.title || `Recommendation ${idx + 1}`,
+            description: item.text || item.description || "AI-generated recommendation based on feedback analysis.",
+            impact: idx === 0 ? "Critical" : idx === 1 ? "High" : "Medium",
+            timeline: idx === 0 ? "Immediate" : idx === 1 ? "2 weeks" : "1 month",
+            resources: idx === 0 ? "DevOps + Backend Team" : idx === 1 ? "Frontend Team" : "Product Team",
+            expectedOutcome: `Improve user satisfaction and address key feedback themes.`,
+            actions: item.text ? [item.text] : [
+              "Review feedback patterns",
+              "Prioritize action items",
+              "Implement improvements"
+            ]
+          }));
+          setAiRecommendations(recommendations);
+        } else {
+          // Fallback recommendations
+          setAiRecommendations([
+            {
+              id: 1,
+              title: "Priority Action",
+              description: topTheme ? `Address "${topTheme.key}" theme - it represents ${((topTheme.count / totalCount) * 100).toFixed(1)}% of all feedback.` : "Review top themes and prioritize action items.",
+              impact: "High",
+              timeline: "Immediate",
+              resources: "Product Team",
+              expectedOutcome: "Improve user satisfaction",
+              actions: ["Review feedback", "Prioritize items", "Take action"]
+            }
+          ]);
         }
       }
     } catch (error) {
@@ -200,9 +185,26 @@ export function AIInsightsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1>AI Insights</h1>
-        <p className="text-muted-foreground mt-2">Auto-generated analysis, risks, and opportunities</p>
+
+      {/* Time Range Filter */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1>AI Insights</h1>
+          <p className="text-muted-foreground mt-2">Auto-generated analysis, risks, and opportunities</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-sm">Time Range:</label>
+          <select 
+            value={timeRange} 
+            onChange={(e) => setTimeRange(e.target.value)}
+            className="px-3 py-2 border-2 rounded-lg bg-white"
+          >
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="365">Last Year</option>
+          </select>
+        </div>
       </div>
 
       {/* Auto Summary */}
@@ -243,7 +245,16 @@ export function AIInsightsPage() {
           <h3>Top Risks</h3>
         </div>
         <div className="space-y-4">
-          {topRisks.map((risk) => (
+          {loading && topRisks.length === 0 ? (
+            <Card className="p-6 border-2">
+              <p className="text-muted-foreground">Loading risks...</p>
+            </Card>
+          ) : topRisks.length === 0 ? (
+            <Card className="p-6 border-2">
+              <p className="text-muted-foreground">No significant risks identified in the selected time range.</p>
+            </Card>
+          ) : (
+            topRisks.map((risk) => (
             <Card key={risk.id} className="p-6 border-2 hover:border-primary transition-colors">
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
@@ -284,7 +295,8 @@ export function AIInsightsPage() {
                 </div>
               </div>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -295,7 +307,16 @@ export function AIInsightsPage() {
           <h3>Opportunities</h3>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {opportunities.map((opp) => (
+          {loading && opportunities.length === 0 ? (
+            <Card className="p-6 border-2">
+              <p className="text-muted-foreground">Loading opportunities...</p>
+            </Card>
+          ) : opportunities.length === 0 ? (
+            <Card className="p-6 border-2">
+              <p className="text-muted-foreground">No significant opportunities identified in the selected time range.</p>
+            </Card>
+          ) : (
+            opportunities.map((opp) => (
             <Card key={opp.id} className="p-6 border-2 hover:border-primary transition-colors">
               <div className="space-y-4">
                 <div>
@@ -333,7 +354,8 @@ export function AIInsightsPage() {
                 </div>
               </div>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -344,7 +366,16 @@ export function AIInsightsPage() {
           <h3>AI Recommendations</h3>
         </div>
         <div className="space-y-4">
-          {recommendations.map((rec) => (
+          {loading && aiRecommendations.length === 0 ? (
+            <Card className="p-6 border-2">
+              <p className="text-muted-foreground">Loading AI recommendations...</p>
+            </Card>
+          ) : aiRecommendations.length === 0 ? (
+            <Card className="p-6 border-2">
+              <p className="text-muted-foreground">No recommendations available. Please try again later.</p>
+            </Card>
+          ) : (
+            aiRecommendations.map((rec) => (
             <Card key={rec.id} className="p-6 border-2">
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
@@ -405,7 +436,8 @@ export function AIInsightsPage() {
                 </div>
               </div>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
