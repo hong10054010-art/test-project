@@ -11,7 +11,10 @@
     "dev": "vite build --watch & wrangler dev",
     "dev:frontend": "vite",
     "preview": "vite preview",
-    "clean": "rm -rf dist src/html-content.js"
+    "clean": "rm -rf dist src/html-content.js",
+    "db:migrate": "node scripts/update-database.js",
+    "db:seed": "node scripts/update-database.js",
+    "db:update": "node scripts/update-database.js"
   },
   "keywords": [
     "cloudflare",

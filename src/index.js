@@ -6,6 +6,7 @@ import { onRequestPost as processHandler } from '../functions/api/process.js';
 import { onRequestPost as aiAdviceHandler } from '../functions/api/ai-advice.js';
 import { onRequestPost as saveViewPostHandler, onRequestGet as saveViewGetHandler } from '../functions/api/save-view.js';
 import { onRequestGet as feedbackListHandler } from '../functions/api/feedback-list.js';
+import { onRequestPost as migrateHandler } from '../functions/api/migrate.js';
 
 // Import embedded HTML content
 import { indexHTML } from './html-content.js';
@@ -62,6 +63,10 @@ async function handleAPI(request, env, ctx, path) {
     } else if (path === '/api/feedback-list') {
       if (request.method === 'GET') {
         return await feedbackListHandler({ env, request });
+      }
+    } else if (path === '/api/migrate') {
+      if (request.method === 'POST') {
+        return await migrateHandler({ env, request });
       }
     }
 
