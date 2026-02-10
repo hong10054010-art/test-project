@@ -3,9 +3,14 @@ CREATE TABLE IF NOT EXISTS raw_feedback (
   id TEXT PRIMARY KEY,
   source TEXT NOT NULL, -- support_ticket, github_issue, community_discord, email_feedback, twitter
   user_type TEXT,
+  user_name TEXT, -- Display name for the user (e.g., "Sarah Johnson")
   country TEXT,
   product_area TEXT,
   content TEXT NOT NULL,
+  rating INTEGER, -- 1-5 star rating
+  category TEXT, -- Product Feature, Performance, Customer Support, Integration, UI/UX, Pricing
+  tags TEXT, -- JSON array of tags (e.g., '["UI", "Dashboard"]')
+  verified INTEGER DEFAULT 0, -- 0 or 1 (boolean)
   created_at TEXT NOT NULL
 );
 

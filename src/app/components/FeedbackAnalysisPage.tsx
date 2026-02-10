@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Checkbox } from "./ui/checkbox";
 import { Search, Filter, Download, ThumbsUp, ThumbsDown, Minus, Tag, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
-import { queryFeedback, processFeedback } from "../../lib/api";
+import { queryFeedback, processFeedback, getFeedbackList } from "../../lib/api";
 import { toast } from "sonner";
 
 // Interface for feedback data
@@ -151,33 +151,41 @@ export function FeedbackAnalysisPage() {
   // Load feedback data from API
   useEffect(() => {
     loadFeedbackData();
-  }, [filterSentiment, filterSource, filterCategory, currentPage]);
+  }, [filterSentiment, filterSource, filterCategory, currentPage, searchQuery]);
 
   const loadFeedbackData = async () => {
     setLoading(true);
     try {
-      const response = await queryFeedback({
-        source: filterSource !== "all" ? filterSource : undefined,
-        timeRange: "30"
+      // Map filterSource display names to API format
+      let apiSource = undefined;
+      if (filterSource !== "all") {
+        if (filterSource === "Email") apiSource = "email_feedback";
+        else if (filterSource === "Support Ticket") apiSource = "support_ticket";
+        else if (filterSource === "Social Media") apiSource = "twitter";
+        else if (filterSource === "Review") apiSource = "github_issue";
+        else if (filterSource === "Survey") apiSource = "community_discord";
+        // If it's already in API format, use it as is
+        else if (["support_ticket", "github_issue", "community_discord", "email_feedback", "twitter"].includes(filterSource)) {
+          apiSource = filterSource;
+        }
+      }
+
+      const response = await getFeedbackList({
+        source: apiSource,
+        sentiment: filterSentiment !== "all" ? filterSentiment : undefined,
+        category: filterCategory !== "all" ? filterCategory : undefined,
+        timeRange: "30",
+        page: currentPage,
+        pageSize: 10,
+        search: searchQuery || undefined
       });
       
-      if (response.ok && response.totalCount) {
-        // Map API response to FeedbackItem format
-        // Note: We need to fetch actual feedback items from a new endpoint
-        // For now, we'll use the count to show we have data
-        // TODO: Create a new endpoint to fetch individual feedback items
-        const total = response.totalCount || 0;
-        setTotalPages(Math.ceil(total / 10) || 1);
-        
-        // If we have data from API, show a message that we're using real data
-        if (total > 0) {
-          // For now, keep using mock data structure but indicate real data count
-          setFeedbackData(mockFeedbackData.slice(0, Math.min(10, total)));
-        } else {
-          setFeedbackData([]);
-        }
+      if (response.ok && response.items) {
+        setFeedbackData(response.items);
+        setTotalPages(response.totalPages || 1);
       } else {
         // Fallback to mock data
+        console.warn("Failed to load feedback list, using mock data:", response.error);
         setFeedbackData(mockFeedbackData);
         setTotalPages(1);
       }
@@ -191,15 +199,21 @@ export function FeedbackAnalysisPage() {
     }
   };
 
+  // Data is already filtered by API, but we can do client-side filtering for search if needed
   const filteredFeedback = feedbackData.filter(item => {
-    const matchesSearch = 
-      item.text.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      item.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchQuery.toLowerCase());
+    // If search query is provided, filter client-side (API also filters, but this is a backup)
+    if (searchQuery) {
+      const matchesSearch = 
+        item.text.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        item.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.id.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+    }
+    // Additional client-side filters as backup
     const matchesSentiment = filterSentiment === "all" || item.sentiment === filterSentiment;
     const matchesSource = filterSource === "all" || item.source === filterSource;
     const matchesCategory = filterCategory === "all" || item.category === filterCategory;
-    return matchesSearch && matchesSentiment && matchesSource && matchesCategory;
+    return matchesSentiment && matchesSource && matchesCategory;
   });
 
   const getSentimentBadge = (sentiment: string) => {
@@ -354,11 +368,11 @@ export function FeedbackAnalysisPage() {
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   <SelectItem value="all">All Sources</SelectItem>
-                  <SelectItem value="support_ticket">Support Ticket</SelectItem>
-                  <SelectItem value="github_issue">GitHub Issue</SelectItem>
-                  <SelectItem value="community_discord">Community Discord</SelectItem>
-                  <SelectItem value="email_feedback">Email Feedback</SelectItem>
-                  <SelectItem value="twitter">Twitter</SelectItem>
+                  <SelectItem value="Email">Email</SelectItem>
+                  <SelectItem value="Support Ticket">Support Ticket</SelectItem>
+                  <SelectItem value="Social Media">Social Media</SelectItem>
+                  <SelectItem value="Review">Review</SelectItem>
+                  <SelectItem value="Survey">Survey</SelectItem>
                 </SelectContent>
               </Select>
             </div>

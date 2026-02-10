@@ -150,3 +150,57 @@ export function getGitHubConnection(): GitHubConnection | null {
 export function disconnectGitHub() {
   localStorage.removeItem('github_connection');
 }
+
+export interface FeedbackListItem {
+  id: string;
+  date: string;
+  user: string;
+  source: string;
+  sentiment: string;
+  rating: number;
+  category: string;
+  tags: string[];
+  text: string;
+  verified: boolean;
+}
+
+export interface FeedbackListResponse {
+  ok: boolean;
+  items?: FeedbackListItem[];
+  totalCount?: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
+  error?: string;
+}
+
+export async function getFeedbackList(filters: {
+  source?: string;
+  sentiment?: string;
+  category?: string;
+  timeRange?: string;
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}): Promise<FeedbackListResponse> {
+  try {
+    const params = new URLSearchParams();
+    if (filters.timeRange) params.set('timeRange', filters.timeRange);
+    if (filters.source && filters.source !== 'all') params.set('source', filters.source);
+    if (filters.sentiment && filters.sentiment !== 'all') params.set('sentiment', filters.sentiment);
+    if (filters.category && filters.category !== 'all') params.set('category', filters.category);
+    if (filters.page) params.set('page', filters.page.toString());
+    if (filters.pageSize) params.set('pageSize', filters.pageSize.toString());
+    if (filters.search) params.set('search', filters.search);
+
+    const response = await fetch(`${API_BASE}/feedback-list?${params.toString()}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Feedback List API Error:', error);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}

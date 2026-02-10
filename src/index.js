@@ -5,6 +5,7 @@ import { onRequestPost as seedHandler } from '../functions/api/seed.js';
 import { onRequestPost as processHandler } from '../functions/api/process.js';
 import { onRequestPost as aiAdviceHandler } from '../functions/api/ai-advice.js';
 import { onRequestPost as saveViewPostHandler, onRequestGet as saveViewGetHandler } from '../functions/api/save-view.js';
+import { onRequestGet as feedbackListHandler } from '../functions/api/feedback-list.js';
 
 // Import embedded HTML content
 import { indexHTML } from './html-content.js';
@@ -57,6 +58,10 @@ async function handleAPI(request, env, ctx, path) {
         return await saveViewPostHandler({ env, request });
       } else if (request.method === 'GET') {
         return await saveViewGetHandler({ env, request });
+      }
+    } else if (path === '/api/feedback-list') {
+      if (request.method === 'GET') {
+        return await feedbackListHandler({ env, request });
       }
     }
 
