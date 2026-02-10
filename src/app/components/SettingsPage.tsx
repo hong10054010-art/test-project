@@ -64,10 +64,30 @@ export function SettingsPage() {
 
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-muted p-1">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="ai">AI Settings</TabsTrigger>
-          <TabsTrigger value="integrations">Integrations</TabsTrigger>
+          <TabsTrigger 
+            value="general"
+            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+          >
+            General
+          </TabsTrigger>
+          <TabsTrigger 
+            value="notifications"
+            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+          >
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger 
+            value="ai"
+            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+          >
+            AI Settings
+          </TabsTrigger>
+          <TabsTrigger 
+            value="integrations"
+            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+          >
+            Integrations
+          </TabsTrigger>
         </TabsList>
 
         {/* General Settings */}

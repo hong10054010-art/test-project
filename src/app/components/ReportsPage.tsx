@@ -8,7 +8,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { FileText, Download, Eye, Calendar, Clock, BarChart3, FileBarChart, Plus, Save, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { queryFeedback } from "../../lib/api";
 import { toast } from "sonner";
 
@@ -61,6 +61,40 @@ export function ReportsPage() {
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>(["customer service"]);
   const [selectedCharts, setSelectedCharts] = useState<string[]>(["line", "bar"]);
   const [reportName, setReportName] = useState("");
+  const [reportData, setReportData] = useState<any>(null);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadReportData();
+  }, [selectedTimeRange, selectedSectors, selectedKeywords]);
+
+  const loadReportData = async () => {
+    try {
+      const timeRangeValue = selectedTimeRange.replace("last", "");
+      const response = await queryFeedback({ timeRange: timeRangeValue });
+      if (response.ok && response.charts) {
+        setReportData(response);
+        
+        // Process time data for preview
+        const timeData = response.charts.byTime || [];
+        const processedData = timeData.slice(-4).map((item: any) => {
+          const date = new Date(item.key);
+          return {
+            date: `Week ${Math.floor((date.getTime() - new Date(timeData[0].key).getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1}`,
+            value: item.count
+          };
+        });
+        setPreviewData(processedData.length > 0 ? processedData : [
+          { date: "Week 1", value: 0 },
+          { date: "Week 2", value: 0 },
+          { date: "Week 3", value: 0 },
+          { date: "Week 4", value: 0 }
+        ]);
+      }
+    } catch (error) {
+      console.error("Failed to load report data:", error);
+    }
+  };
 
   const toggleSelection = (item: string, list: string[], setter: (list: string[]) => void) => {
     if (list.includes(item)) {
@@ -134,9 +168,24 @@ export function ReportsPage() {
 
       <Tabs defaultValue="builder" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-muted p-1">
-          <TabsTrigger value="builder">Report Builder</TabsTrigger>
-          <TabsTrigger value="saved">Saved Reports</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger 
+            value="builder"
+            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+          >
+            Report Builder
+          </TabsTrigger>
+          <TabsTrigger 
+            value="saved"
+            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+          >
+            Saved Reports
+          </TabsTrigger>
+          <TabsTrigger 
+            value="history"
+            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+          >
+            History
+          </TabsTrigger>
         </TabsList>
 
         {/* Report Builder */}
@@ -302,11 +351,20 @@ export function ReportsPage() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="p-4 bg-background rounded-lg border-2">
                       <p className="text-sm text-muted-foreground">Total Mentions</p>
-                      <h3 className="mt-1">8,234</h3>
+                      <h3 className="mt-1">{reportData?.totalCount?.toLocaleString() || "0"}</h3>
                     </div>
                     <div className="p-4 bg-background rounded-lg border-2">
                       <p className="text-sm text-muted-foreground">Positive %</p>
-                      <h3 className="mt-1 text-[#84cc16]">68%</h3>
+                      <h3 className="mt-1 text-[#84cc16]">
+                        {reportData?.charts?.bySentiment ? (
+                          (() => {
+                            const sentimentData = reportData.charts.bySentiment;
+                            const positive = sentimentData.find((s: any) => s.key === 'positive')?.count || 0;
+                            const total = sentimentData.reduce((sum: number, s: any) => sum + s.count, 0);
+                            return total > 0 ? Math.round((positive / total) * 100) : 0;
+                          })()
+                        ) : 0}%
+                      </h3>
                     </div>
                     <div className="p-4 bg-background rounded-lg border-2">
                       <p className="text-sm text-muted-foreground">Growth</p>

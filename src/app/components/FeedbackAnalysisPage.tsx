@@ -325,7 +325,7 @@ export function FeedbackAnalysisPage() {
             <div>
               <label className="text-sm mb-2 block">Sentiment</label>
               <Select value={filterSentiment} onValueChange={setFilterSentiment}>
-                <SelectTrigger className="border-2">
+                <SelectTrigger className="border-2 bg-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -339,23 +339,23 @@ export function FeedbackAnalysisPage() {
             <div>
               <label className="text-sm mb-2 block">Source</label>
               <Select value={filterSource} onValueChange={setFilterSource}>
-                <SelectTrigger className="border-2">
+                <SelectTrigger className="border-2 bg-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Sources</SelectItem>
-                  <SelectItem value="Email">Email</SelectItem>
-                  <SelectItem value="Support Ticket">Support Ticket</SelectItem>
-                  <SelectItem value="Social Media">Social Media</SelectItem>
-                  <SelectItem value="Review">Review</SelectItem>
-                  <SelectItem value="Survey">Survey</SelectItem>
+                  <SelectItem value="support_ticket">Support Ticket</SelectItem>
+                  <SelectItem value="github_issue">GitHub Issue</SelectItem>
+                  <SelectItem value="community_discord">Community Discord</SelectItem>
+                  <SelectItem value="email_feedback">Email Feedback</SelectItem>
+                  <SelectItem value="twitter">Twitter</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-sm mb-2 block">Category</label>
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="border-2">
+                <SelectTrigger className="border-2 bg-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

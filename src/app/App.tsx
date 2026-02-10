@@ -15,6 +15,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<PageType>("overview");
   const [keywordFilter, setKeywordFilter] = useState<string | undefined>(undefined);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarHovered, setSidebarHovered] = useState(false);
 
   const navigation = [
     { id: "overview" as PageType, name: "Overview", icon: LayoutDashboard },
@@ -54,16 +55,24 @@ export default function App() {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar for desktop */}
-      <aside className="hidden lg:flex lg:flex-col w-64 bg-sidebar border-r border-sidebar-border p-6">
-        <div className="mb-8">
+      <aside 
+        className={`hidden lg:flex lg:flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ${
+          sidebarHovered ? 'w-64 p-6' : 'w-20 p-4'
+        }`}
+        onMouseEnter={() => setSidebarHovered(true)}
+        onMouseLeave={() => setSidebarHovered(false)}
+      >
+        <div className={`mb-8 transition-all duration-300 ${sidebarHovered ? '' : 'flex justify-center'}`}>
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
               <Brain className="h-6 w-6 text-primary-foreground" />
             </div>
-            <div>
-              <h2 className="text-sidebar-foreground">FeedbackAI</h2>
-              <p className="text-xs text-muted-foreground">Analytics Dashboard</p>
-            </div>
+            {sidebarHovered && (
+              <div className="transition-opacity duration-300">
+                <h2 className="text-sidebar-foreground">FeedbackAI</h2>
+                <p className="text-xs text-muted-foreground">Analytics Dashboard</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -75,27 +84,32 @@ export default function App() {
               <Button
                 key={item.id}
                 variant={isActive ? "default" : "ghost"}
-                className={`w-full justify-start ${
+                className={`w-full transition-all duration-300 ${
+                  sidebarHovered ? 'justify-start' : 'justify-center px-0'
+                } ${
                   isActive 
                     ? "bg-primary text-primary-foreground hover:bg-primary/90" 
                     : "text-sidebar-foreground hover:bg-sidebar-accent"
                 }`}
                 onClick={() => setCurrentPage(item.id)}
+                title={!sidebarHovered ? item.name : undefined}
               >
-                <Icon className="h-5 w-5 mr-3" />
-                {item.name}
+                <Icon className={`h-5 w-5 ${sidebarHovered ? 'mr-3' : 'mr-0'}`} />
+                {sidebarHovered && <span>{item.name}</span>}
               </Button>
             );
           })}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-sidebar-border">
-          <div className="p-3 bg-accent rounded-lg">
-            <p className="text-sm">
-              <span className="text-primary">💡 Tip:</span> Check AI Insights daily for new recommendations!
-            </p>
+        {sidebarHovered && (
+          <div className="mt-auto pt-6 border-t border-sidebar-border transition-opacity duration-300">
+            <div className="p-3 bg-accent rounded-lg">
+              <p className="text-sm">
+                <span className="text-primary">💡 Tip:</span> Check AI Insights daily for new recommendations!
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </aside>
 
       {/* Mobile sidebar */}
