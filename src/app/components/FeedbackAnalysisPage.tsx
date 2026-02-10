@@ -174,7 +174,7 @@ export function FeedbackAnalysisPage() {
         source: apiSource,
         sentiment: filterSentiment !== "all" ? filterSentiment : undefined,
         category: filterCategory !== "all" ? filterCategory : undefined,
-        timeRange: "30",
+        timeRange: "365", // Changed from "30" to "365" to show more data
         page: currentPage,
         pageSize: 10,
         search: searchQuery || undefined
