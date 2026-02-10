@@ -1,6 +1,13 @@
-/* Override tabs active state for Settings and Reports pages */
-.tab-green-active[data-state="active"] {
+/* Override tabs active state for Settings and Reports pages - Maximum specificity */
+[data-slot="tabs-trigger"].tab-green-active[data-state="active"],
+[data-slot="tabs-trigger"][data-state="active"].tab-green-active,
+[data-slot="tabs-trigger"][data-state="active"][class*="tab-green-active"],
+button[data-slot="tabs-trigger"].tab-green-active[data-state="active"],
+button[data-slot="tabs-trigger"][data-state="active"].tab-green-active {
   background-color: #4d7c0f !important;
+  background: #4d7c0f !important;
   color: white !important;
+  color: #ffffff !important;
   border-color: transparent !important;
+  border: transparent !important;
 }
