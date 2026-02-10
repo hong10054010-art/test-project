@@ -211,19 +211,19 @@ export function ReportsPage() {
         <TabsList className="grid w-full grid-cols-3 bg-muted p-1">
           <TabsTrigger 
             value="builder"
-            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+            className="!data-[state=active]:bg-[#4d7c0f] !data-[state=active]:text-white !data-[state=active]:border-transparent"
           >
             Report Builder
           </TabsTrigger>
           <TabsTrigger 
             value="saved"
-            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+            className="!data-[state=active]:bg-[#4d7c0f] !data-[state=active]:text-white !data-[state=active]:border-transparent"
           >
             Saved Reports
           </TabsTrigger>
           <TabsTrigger 
             value="history"
-            className="data-[state=active]:bg-[#4d7c0f] data-[state=active]:text-white"
+            className="!data-[state=active]:bg-[#4d7c0f] !data-[state=active]:text-white !data-[state=active]:border-transparent"
           >
             History
           </TabsTrigger>

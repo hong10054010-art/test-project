@@ -66,25 +66,25 @@ export function SettingsPage() {
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-muted p-1">
           <TabsTrigger 
             value="general"
-            className="data-[state=active]:!bg-[#4d7c0f] data-[state=active]:!text-white data-[state=active]:border-transparent"
+            className="!data-[state=active]:bg-[#4d7c0f] !data-[state=active]:text-white !data-[state=active]:border-transparent"
           >
             General
           </TabsTrigger>
           <TabsTrigger 
             value="notifications"
-            className="data-[state=active]:!bg-[#4d7c0f] data-[state=active]:!text-white data-[state=active]:border-transparent"
+            className="!data-[state=active]:bg-[#4d7c0f] !data-[state=active]:text-white !data-[state=active]:border-transparent"
           >
             Notifications
           </TabsTrigger>
           <TabsTrigger 
             value="ai"
-            className="data-[state=active]:!bg-[#4d7c0f] data-[state=active]:!text-white data-[state=active]:border-transparent"
+            className="!data-[state=active]:bg-[#4d7c0f] !data-[state=active]:text-white !data-[state=active]:border-transparent"
           >
             AI Settings
           </TabsTrigger>
           <TabsTrigger 
             value="integrations"
-            className="data-[state=active]:!bg-[#4d7c0f] data-[state=active]:!text-white data-[state=active]:border-transparent"
+            className="!data-[state=active]:bg-[#4d7c0f] !data-[state=active]:text-white !data-[state=active]:border-transparent"
           >
             Integrations
           </TabsTrigger>

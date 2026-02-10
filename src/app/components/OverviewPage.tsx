@@ -3,7 +3,6 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Checkbox } from "./ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown, MessageSquare, AlertTriangle, Hash, Sparkles, ThumbsUp, ThumbsDown, Minus, Save, Share2, RotateCw, Download, Filter, Bookmark, X } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -19,7 +18,7 @@ interface OverviewPageProps {
 export function OverviewPage({ onNavigate }: OverviewPageProps) {
   const [watchedKeywords, setWatchedKeywords] = useState<string[]>(["slow loading", "pricing"]);
   const [loading, setLoading] = useState(false);
-  const [showFilterDialog, setShowFilterDialog] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [filterTimeRange, setFilterTimeRange] = useState("30");
   const [filterKeywords, setFilterKeywords] = useState<string[]>([]);
   const [filterSectors, setFilterSectors] = useState<string[]>([]);
@@ -152,13 +151,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
   };
 
   const handleFilter = () => {
-    setShowFilterDialog(true);
-  };
-
-  const handleApplyFilter = () => {
-    loadData();
-    setShowFilterDialog(false);
-    toast.success("Filters applied");
+    setShowFilters(!showFilters);
   };
 
   const handleExport = () => {
@@ -295,98 +288,15 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
             <RotateCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Dialog open={showFilterDialog} onOpenChange={setShowFilterDialog}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="border-2"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Filter
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl bg-white">
-              <DialogHeader>
-                <DialogTitle>Filter Dashboard</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Time Range</label>
-                  <Select value={filterTimeRange} onValueChange={setFilterTimeRange}>
-                    <SelectTrigger className="border-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7">Last 7 Days</SelectItem>
-                      <SelectItem value="30">Last 30 Days</SelectItem>
-                      <SelectItem value="90">Last 90 Days</SelectItem>
-                      <SelectItem value="365">Last Year</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Keywords</label>
-                  <div className="space-y-2 p-3 bg-muted rounded-lg border-2 max-h-40 overflow-y-auto">
-                    {["customer service", "slow loading", "easy to use", "pricing", "integration", "mobile app", "user interface", "data security"].map((keyword) => (
-                      <div key={keyword} className="flex items-center gap-2">
-                        <Checkbox
-                          checked={filterKeywords.includes(keyword)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setFilterKeywords([...filterKeywords, keyword]);
-                            } else {
-                              setFilterKeywords(filterKeywords.filter(k => k !== keyword));
-                            }
-                          }}
-                        />
-                        <label className="text-sm cursor-pointer capitalize">{keyword}</label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Sectors</label>
-                  <div className="space-y-2 p-3 bg-muted rounded-lg border-2">
-                    {["Technology", "Finance", "Healthcare", "Retail"].map((sector) => (
-                      <div key={sector} className="flex items-center gap-2">
-                        <Checkbox
-                          checked={filterSectors.includes(sector)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setFilterSectors([...filterSectors, sector]);
-                            } else {
-                              setFilterSectors(filterSectors.filter(s => s !== sector));
-                            }
-                          }}
-                        />
-                        <label className="text-sm cursor-pointer">{sector}</label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex gap-2 pt-4">
-                  <Button 
-                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                    onClick={handleApplyFilter}
-                  >
-                    Apply Filters
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="flex-1 border-2"
-                    onClick={() => {
-                      setFilterKeywords([]);
-                      setFilterSectors([]);
-                      setFilterTimeRange("30");
-                    }}
-                  >
-                    Reset
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-2"
+            onClick={handleFilter}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filter
+          </Button>
           <Button 
             className="bg-primary text-primary-foreground hover:bg-primary/90" 
             size="sm"
@@ -397,6 +307,59 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
           </Button>
         </div>
       </div>
+
+      {/* Filter Panel */}
+      {showFilters && (
+        <Card className="p-4 border-2 bg-muted/50">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm mb-2 block">Time Range</label>
+              <Select value={filterTimeRange} onValueChange={(value) => {
+                setFilterTimeRange(value);
+                loadData();
+              }}>
+                <SelectTrigger className="border-2 bg-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="7">Last 7 Days</SelectItem>
+                  <SelectItem value="30">Last 30 Days</SelectItem>
+                  <SelectItem value="90">Last 90 Days</SelectItem>
+                  <SelectItem value="365">Last Year</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm mb-2 block">Keywords</label>
+              <Select>
+                <SelectTrigger className="border-2 bg-white">
+                  <SelectValue placeholder="All Keywords" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="all">All Keywords</SelectItem>
+                  {topKeywords.map((k) => (
+                    <SelectItem key={k.keyword} value={k.keyword}>{k.keyword}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm mb-2 block">Sectors</label>
+              <Select>
+                <SelectTrigger className="border-2 bg-white">
+                  <SelectValue placeholder="All Sectors" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="all">All Sectors</SelectItem>
+                  {sectorData.map((s) => (
+                    <SelectItem key={s.sector} value={s.sector}>{s.sector}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Section 1: Key Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

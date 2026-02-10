@@ -338,7 +338,7 @@ export function FeedbackAnalysisPage() {
                 <SelectTrigger className="border-2 bg-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Sentiments</SelectItem>
                   <SelectItem value="positive">Positive</SelectItem>
                   <SelectItem value="neutral">Neutral</SelectItem>
@@ -352,7 +352,7 @@ export function FeedbackAnalysisPage() {
                 <SelectTrigger className="border-2 bg-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Sources</SelectItem>
                   <SelectItem value="support_ticket">Support Ticket</SelectItem>
                   <SelectItem value="github_issue">GitHub Issue</SelectItem>
@@ -368,7 +368,7 @@ export function FeedbackAnalysisPage() {
                 <SelectTrigger className="border-2 bg-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Categories</SelectItem>
                   <SelectItem value="Product Feature">Product Feature</SelectItem>
                   <SelectItem value="Performance">Performance</SelectItem>
