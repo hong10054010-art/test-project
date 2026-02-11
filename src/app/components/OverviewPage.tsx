@@ -39,7 +39,6 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
     try {
       const response = await queryFeedback({ timeRange: filterTimeRange });
       if (response.ok && response.charts) {
-        setOverviewData(response);
         
         // Calculate metrics - use the totalCount from API response
         const total = response.totalCount || 0;
@@ -109,7 +108,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
       
       const result = await saveView(reportName, { 
         timeRange: filterTimeRange,
-        sectors: filterSectors.join(',')
+        product: filterSectors.length > 0 ? filterSectors.join(',') : undefined
       });
       if (result.ok) {
         toast.success(`Report "${reportName}" saved to Saved Reports. Check Reports page to view it.`);
