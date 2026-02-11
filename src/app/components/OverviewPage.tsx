@@ -19,9 +19,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filterTimeRange, setFilterTimeRange] = useState("30");
-  const [filterKeywords, setFilterKeywords] = useState<string[]>([]);
   const [filterSectors, setFilterSectors] = useState<string[]>([]);
-  const [overviewData, setOverviewData] = useState<any>(null);
   const [trendData, setTrendData] = useState<any[]>([]);
   const [topKeywords, setTopKeywords] = useState<any[]>([]);
   const [sectorData, setSectorData] = useState<any[]>([]);
@@ -111,7 +109,6 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
       
       const result = await saveView(reportName, { 
         timeRange: filterTimeRange,
-        keywords: filterKeywords.join(','),
         sectors: filterSectors.join(',')
       });
       if (result.ok) {
@@ -524,7 +521,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
                   {/* Mini Trend Chart */}
                   <div className="w-20 h-12 opacity-0 group-hover:opacity-100 transition-opacity">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={item.trend.map((value, i) => ({ value }))}>
+                      <LineChart data={item.trend.map((value: number) => ({ value }))}>
                         <Line 
                           type="monotone" 
                           dataKey="value" 
