@@ -185,13 +185,6 @@ export function ReportsPage() {
     }
   };
 
-  const toggleSelection = (item: string, list: string[], setter: (list: string[]) => void) => {
-    if (list.includes(item)) {
-      setter(list.filter(i => i !== item));
-    } else {
-      setter([...list, item]);
-    }
-  };
 
   const handlePreview = async () => {
     try {

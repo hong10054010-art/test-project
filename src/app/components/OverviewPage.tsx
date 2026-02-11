@@ -2,11 +2,10 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Checkbox } from "./ui/checkbox";
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, TrendingDown, MessageSquare, AlertTriangle, Hash, Sparkles, ThumbsUp, ThumbsDown, Minus, Save, Share2, RotateCw, Download, Filter, Bookmark, X } from "lucide-react";
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp, TrendingDown, MessageSquare, AlertTriangle, Hash, Sparkles, ThumbsUp, ThumbsDown, Minus, Save, Share2, RotateCw, Download, Filter, Bookmark } from "lucide-react";
 import { useState, useEffect } from "react";
-import { queryFeedback, saveView, getSavedViews } from "../../lib/api";
+import { queryFeedback, saveView } from "../../lib/api";
 import { toast } from "sonner";
 
 // All data is now loaded from D1 database via API
