@@ -91,3 +91,39 @@ export async function onRequestGet({ env, request }) {
     }, { status: 500 });
   }
 }
+
+// Delete saved view
+export async function onRequestDelete({ env, request }) {
+  try {
+    const url = new URL(request.url);
+    const viewId = url.searchParams.get('id');
+
+    if (!viewId) {
+      return Response.json({
+        ok: false,
+        error: 'View ID is required'
+      }, { status: 400 });
+    }
+
+    // Delete the view from KV
+    await env.SAVED_VIEWS.delete(viewId);
+
+    // Remove from views list
+    const viewsList = await env.SAVED_VIEWS.get('views_list');
+    if (viewsList) {
+      const views = JSON.parse(viewsList);
+      const updatedViews = views.filter((id) => id !== viewId);
+      await env.SAVED_VIEWS.put('views_list', JSON.stringify(updatedViews));
+    }
+
+    return Response.json({
+      ok: true,
+      message: 'View deleted successfully'
+    });
+  } catch (error) {
+    return Response.json({
+      ok: false,
+      error: error.message
+    }, { status: 500 });
+  }
+}
