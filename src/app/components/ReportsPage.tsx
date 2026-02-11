@@ -63,6 +63,7 @@ export function ReportsPage() {
   const [reportName, setReportName] = useState("");
   const [reportData, setReportData] = useState<any>(null);
   const [previewData, setPreviewData] = useState<any[]>([]);
+  const [previousReportData, setPreviousReportData] = useState<any>(null); // For growth calculation
   const [savedReports, setSavedReports] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("builder");
 
@@ -98,12 +99,27 @@ export function ReportsPage() {
 
   const loadReportData = async () => {
     try {
-      const timeRangeValue = selectedTimeRange.replace("last", "");
-      const response = await queryFeedback({ timeRange: timeRangeValue });
+      const timeRangeValue = selectedTimeRange.replace("last", "").replace("ytd", "365");
+      
+      // Store previous data for growth calculation before loading new data
+      if (reportData) {
+        setPreviousReportData({ ...reportData });
+      }
+      
+      // Load current period data with filters
+      const filters: any = { timeRange: timeRangeValue };
+      
+      // Apply sector filter if any selected
+      if (selectedSectors.length > 0 && selectedSectors.length < 4) {
+        // Only filter if not all sectors selected
+        filters.product = selectedSectors.join(',');
+      }
+      
+      const response = await queryFeedback(filters);
       if (response.ok && response.charts) {
         setReportData(response);
         
-        // Process time data for preview
+        // Process time data for preview charts
         const timeData = response.charts.byTime || [];
         if (timeData.length > 0) {
           // Sort by date to ensure correct order
