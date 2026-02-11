@@ -318,7 +318,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
                 setFilterTimeRange(value);
                 loadData();
               }}>
-                <SelectTrigger className="border-2 bg-muted">
+                <SelectTrigger className="border-2 bg-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
