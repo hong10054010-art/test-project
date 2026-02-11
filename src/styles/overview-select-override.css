@@ -1,0 +1,9 @@
+/* Force white background for Overview page filter selects */
+[data-slot="select-trigger"] {
+  background-color: white !important;
+}
+
+/* Specifically target Overview page filter panel selects */
+.bg-muted\/50 [data-slot="select-trigger"] {
+  background-color: white !important;
+}
