@@ -411,7 +411,7 @@ export function ReportsPage() {
                   <div className="space-y-2">
                     <Label>Time Range</Label>
                     <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-                      <SelectTrigger className="border-2 bg-[#4d7c0f]/10">
+                      <SelectTrigger className="border-2 !bg-[#4d7c0f]/10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

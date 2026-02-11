@@ -106,7 +106,7 @@ export function SettingsPage() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="company">Company Name</Label>
-                <Input id="company" placeholder="Acme Inc." className="border-2" />
+                <Input id="company" placeholder="Acme Inc." className="border-2 bg-[#4d7c0f]/10" />
               </div>
 
               <div className="space-y-2">
@@ -227,7 +227,7 @@ export function SettingsPage() {
                   id="email" 
                   type="email" 
                   placeholder="your@email.com" 
-                  className="border-2"
+                  className="border-2 bg-[#4d7c0f]/10"
                 />
               </div>
             </div>
