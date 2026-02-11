@@ -92,7 +92,7 @@ export async function onRequestGet({ env, request }) {
   
   console.log(`[Query] Total count for ${timeRange} days:`, totalCountResult?.count);
 
-  // By Theme
+  // By Theme (only if not filtering by theme, otherwise we already have filtered data)
   const byTheme = await env.DB
     .prepare(
       `SELECT IFNULL(e.theme, 'unclassified') AS key, COUNT(*) AS count

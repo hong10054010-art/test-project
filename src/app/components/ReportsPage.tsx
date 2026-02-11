@@ -479,9 +479,26 @@ export function ReportsPage() {
                           <div key={sector} className="flex items-center gap-2">
                             <Checkbox
                               checked={selectedSectors.includes(sector)}
-                              onCheckedChange={() => toggleSelection(sector, selectedSectors, setSelectedSectors)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedSectors([...selectedSectors, sector]);
+                                } else {
+                                  setSelectedSectors(selectedSectors.filter(s => s !== sector));
+                                }
+                              }}
                             />
-                            <label className="text-sm cursor-pointer">{sector}</label>
+                            <label 
+                              className="text-sm cursor-pointer"
+                              onClick={() => {
+                                if (selectedSectors.includes(sector)) {
+                                  setSelectedSectors(selectedSectors.filter(s => s !== sector));
+                                } else {
+                                  setSelectedSectors([...selectedSectors, sector]);
+                                }
+                              }}
+                            >
+                              {sector}
+                            </label>
                           </div>
                         ))
                       ) : (
@@ -499,9 +516,26 @@ export function ReportsPage() {
                           <div key={keyword} className="flex items-center gap-2">
                             <Checkbox
                               checked={selectedKeywords.includes(keyword)}
-                              onCheckedChange={() => toggleSelection(keyword, selectedKeywords, setSelectedKeywords)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedKeywords([...selectedKeywords, keyword]);
+                                } else {
+                                  setSelectedKeywords(selectedKeywords.filter(k => k !== keyword));
+                                }
+                              }}
                             />
-                            <label className="text-sm cursor-pointer capitalize">{keyword}</label>
+                            <label 
+                              className="text-sm cursor-pointer capitalize"
+                              onClick={() => {
+                                if (selectedKeywords.includes(keyword)) {
+                                  setSelectedKeywords(selectedKeywords.filter(k => k !== keyword));
+                                } else {
+                                  setSelectedKeywords([...selectedKeywords, keyword]);
+                                }
+                              }}
+                            >
+                              {keyword}
+                            </label>
                           </div>
                         ))
                       ) : (
