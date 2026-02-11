@@ -344,13 +344,23 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
             </div>
             <div>
               <label className="text-sm mb-2 block">Sectors</label>
-              <Select>
+              <Select 
+                value={filterSectors.length > 0 ? filterSectors[0] : "all"}
+                onValueChange={(value) => {
+                  if (value === "all") {
+                    setFilterSectors([]);
+                  } else {
+                    setFilterSectors([value]);
+                  }
+                  loadData();
+                }}
+              >
                 <SelectTrigger className="border-2 !bg-white">
                   <SelectValue placeholder="All Sectors" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   <SelectItem value="all">All Sectors</SelectItem>
-                  {sectorData.map((s) => (
+                  {sectorData.map((s: any) => (
                     <SelectItem key={s.sector} value={s.sector}>{s.sector}</SelectItem>
                   ))}
                 </SelectContent>
