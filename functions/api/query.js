@@ -70,6 +70,20 @@ export async function onRequestGet({ env, request }) {
       args.push(country);
     }
   }
+  if (theme) {
+    // Support comma-separated values for multiple theme/keyword selection
+    if (theme.includes(',')) {
+      const themes = theme.split(',').map(t => t.trim()).filter(t => t);
+      if (themes.length > 0) {
+        const placeholders = themes.map(() => '?').join(',');
+        where.push(`e.theme IN (${placeholders})`);
+        args.push(...themes);
+      }
+    } else {
+      where.push("e.theme = ?");
+      args.push(theme);
+    }
+  }
   if (timeRange !== "all") {
     // Format date as ISO string for comparison
     // Since created_at is stored as ISO string (YYYY-MM-DDTHH:mm:ss.sssZ),
@@ -84,9 +98,12 @@ export async function onRequestGet({ env, request }) {
   // Debug: Log query details
   console.log(`[Query] timeRange: ${timeRange}, fromDate: ${fromDate.toISOString()}, whereSql: ${whereSql}, args:`, args);
 
-  // Total count
+  // Total count (need to join with enriched_feedback if filtering by theme)
+  const countQuery = theme 
+    ? `SELECT COUNT(*) as count FROM raw_feedback r LEFT JOIN enriched_feedback e ON r.id = e.id ${whereSql}`
+    : `SELECT COUNT(*) as count FROM raw_feedback r ${whereSql}`;
   const totalCountResult = await env.DB
-    .prepare(`SELECT COUNT(*) as count FROM raw_feedback r ${whereSql}`)
+    .prepare(countQuery)
     .bind(...args)
     .first();
   
