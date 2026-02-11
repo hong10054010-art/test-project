@@ -57,13 +57,15 @@ const reportHistory = [
 
 export function ReportsPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("last30");
-  const [selectedSectors, setSelectedSectors] = useState<string[]>(["Technology"]);
-  const [selectedKeywords, setSelectedKeywords] = useState<string[]>(["customer service"]);
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
+  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [selectedCharts, setSelectedCharts] = useState<string[]>(["line", "bar"]);
   const [reportName, setReportName] = useState("");
   const [reportData, setReportData] = useState<any>(null);
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [previousReportData, setPreviousReportData] = useState<any>(null); // For growth calculation
+  const [availableSectors, setAvailableSectors] = useState<string[]>([]); // Available sectors from data
+  const [availableKeywords, setAvailableKeywords] = useState<string[]>([]); // Available keywords from data
   const [savedReports, setSavedReports] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("builder");
 
@@ -110,14 +112,23 @@ export function ReportsPage() {
       const filters: any = { timeRange: timeRangeValue };
       
       // Apply sector filter if any selected
-      if (selectedSectors.length > 0 && selectedSectors.length < 4) {
-        // Only filter if not all sectors selected
+      if (selectedSectors.length > 0) {
         filters.product = selectedSectors.join(',');
       }
       
       const response = await queryFeedback(filters);
       if (response.ok && response.charts) {
         setReportData(response);
+        
+        // Extract available sectors from byProduct data
+        const productData = response.charts.byProduct || [];
+        const sectors = productData.map((p: any) => p.key).filter((s: string) => s);
+        setAvailableSectors(sectors);
+        
+        // Extract available keywords from byTheme data
+        const themeData = response.charts.byTheme || [];
+        const keywords = themeData.map((t: any) => t.key).filter((k: string) => k);
+        setAvailableKeywords(keywords);
         
         // Process time data for preview charts
         const timeData = response.charts.byTime || [];
@@ -444,31 +455,39 @@ export function ReportsPage() {
                   <div className="space-y-2">
                     <Label>Sectors</Label>
                     <div className="space-y-2 p-3 bg-muted rounded-lg border-2">
-                      {["Technology", "Finance", "Healthcare", "Retail"].map((sector) => (
-                        <div key={sector} className="flex items-center gap-2">
-                          <Checkbox
-                            checked={selectedSectors.includes(sector)}
-                            onCheckedChange={() => toggleSelection(sector, selectedSectors, setSelectedSectors)}
-                          />
-                          <label className="text-sm cursor-pointer">{sector}</label>
-                        </div>
-                      ))}
+                      {availableSectors.length > 0 ? (
+                        availableSectors.map((sector) => (
+                          <div key={sector} className="flex items-center gap-2">
+                            <Checkbox
+                              checked={selectedSectors.includes(sector)}
+                              onCheckedChange={() => toggleSelection(sector, selectedSectors, setSelectedSectors)}
+                            />
+                            <label className="text-sm cursor-pointer">{sector}</label>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Loading sectors...</p>
+                      )}
                     </div>
                   </div>
 
                   {/* Keywords */}
                   <div className="space-y-2">
                     <Label>Keywords</Label>
-                    <div className="space-y-2 p-3 bg-muted rounded-lg border-2">
-                      {["customer service", "pricing", "integration", "performance"].map((keyword) => (
-                        <div key={keyword} className="flex items-center gap-2">
-                          <Checkbox
-                            checked={selectedKeywords.includes(keyword)}
-                            onCheckedChange={() => toggleSelection(keyword, selectedKeywords, setSelectedKeywords)}
-                          />
-                          <label className="text-sm cursor-pointer capitalize">{keyword}</label>
-                        </div>
-                      ))}
+                    <div className="space-y-2 p-3 bg-muted rounded-lg border-2 max-h-48 overflow-y-auto">
+                      {availableKeywords.length > 0 ? (
+                        availableKeywords.slice(0, 20).map((keyword) => (
+                          <div key={keyword} className="flex items-center gap-2">
+                            <Checkbox
+                              checked={selectedKeywords.includes(keyword)}
+                              onCheckedChange={() => toggleSelection(keyword, selectedKeywords, setSelectedKeywords)}
+                            />
+                            <label className="text-sm cursor-pointer capitalize">{keyword}</label>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Loading keywords...</p>
+                      )}
                     </div>
                   </div>
 
