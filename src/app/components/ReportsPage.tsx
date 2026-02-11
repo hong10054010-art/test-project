@@ -112,24 +112,25 @@ export function ReportsPage() {
           );
           // Take last 4 data points or all if less than 4
           const last4 = sortedData.slice(-4);
-          const firstDate = new Date(last4[0].key);
           const processedData = last4.map((item: any, index: number) => {
             const date = new Date(item.key);
-            // Calculate week number from the first date in the selection
-            const daysDiff = Math.floor((date.getTime() - firstDate.getTime()) / (24 * 60 * 60 * 1000));
-            const weekNum = Math.floor(daysDiff / 7) + 1;
+            // Format date as "MM/DD" or use simple labels
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            // Use date format for better clarity
             return {
-              date: `Week ${weekNum}`,
+              date: `${month}/${day}`,
               value: item.count
             };
           });
           setPreviewData(processedData);
         } else {
+          // Use simple sequential labels when no data
           setPreviewData([
-            { date: "Week 1", value: 0 },
-            { date: "Week 2", value: 0 },
-            { date: "Week 3", value: 0 },
-            { date: "Week 4", value: 0 }
+            { date: "Day 1", value: 0 },
+            { date: "Day 2", value: 0 },
+            { date: "Day 3", value: 0 },
+            { date: "Day 4", value: 0 }
           ]);
         }
       }
