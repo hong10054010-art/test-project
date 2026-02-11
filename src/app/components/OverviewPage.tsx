@@ -33,7 +33,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
 
   useEffect(() => {
     loadData();
-  }, [filterTimeRange]);
+  }, [filterTimeRange, filterSectors]);
 
   const loadData = async () => {
     setLoading(true);
@@ -367,6 +367,8 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
                           } else {
                             setFilterSectors([...filterSectors, s.sector]);
                           }
+                          // Trigger data reload after a short delay to batch multiple selections
+                          setTimeout(() => loadData(), 100);
                         }}
                       >
                         {s.sector}
