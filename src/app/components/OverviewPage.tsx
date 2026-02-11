@@ -332,7 +332,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
             <div>
               <label className="text-sm mb-2 block">Keywords</label>
               <Select>
-                <SelectTrigger className="border-2 bg-white">
+                <SelectTrigger className="border-2 bg-muted">
                   <SelectValue placeholder="All Keywords" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
@@ -346,7 +346,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
             <div>
               <label className="text-sm mb-2 block">Sectors</label>
               <Select>
-                <SelectTrigger className="border-2 bg-white">
+                <SelectTrigger className="border-2 bg-muted">
                   <SelectValue placeholder="All Sectors" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
