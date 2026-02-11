@@ -2,6 +2,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Checkbox } from "./ui/checkbox";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown, MessageSquare, AlertTriangle, Hash, Sparkles, ThumbsUp, ThumbsDown, Minus, Save, Share2, RotateCw, Download, Filter, Bookmark } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -344,27 +345,38 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
             </div>
             <div>
               <label className="text-sm mb-2 block">Sectors</label>
-              <Select 
-                value={filterSectors.length > 0 ? filterSectors[0] : "all"}
-                onValueChange={(value) => {
-                  if (value === "all") {
-                    setFilterSectors([]);
-                  } else {
-                    setFilterSectors([value]);
-                  }
-                  loadData();
-                }}
-              >
-                <SelectTrigger className="border-2 !bg-white">
-                  <SelectValue placeholder="All Sectors" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="all">All Sectors</SelectItem>
-                  {sectorData.map((s: any) => (
-                    <SelectItem key={s.sector} value={s.sector}>{s.sector}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-2 p-3 bg-white rounded-lg border-2 max-h-48 overflow-y-auto">
+                {sectorData.length > 0 ? (
+                  sectorData.map((s: any) => (
+                    <div key={s.sector} className="flex items-center gap-2">
+                      <Checkbox
+                        checked={filterSectors.includes(s.sector)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setFilterSectors([...filterSectors, s.sector]);
+                          } else {
+                            setFilterSectors(filterSectors.filter((sec: string) => sec !== s.sector));
+                          }
+                        }}
+                      />
+                      <label 
+                        className="text-sm cursor-pointer"
+                        onClick={() => {
+                          if (filterSectors.includes(s.sector)) {
+                            setFilterSectors(filterSectors.filter((sec: string) => sec !== s.sector));
+                          } else {
+                            setFilterSectors([...filterSectors, s.sector]);
+                          }
+                        }}
+                      >
+                        {s.sector}
+                      </label>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No sectors available</p>
+                )}
+              </div>
             </div>
           </div>
         </Card>

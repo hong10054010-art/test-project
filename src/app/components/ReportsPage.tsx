@@ -144,19 +144,30 @@ export function ReportsPage() {
           );
           
           // Determine how many data points to show based on time range
-          let dataPointsToShow = 4; // Default for 7 days
-          if (timeRangeValue === "30") {
-            dataPointsToShow = 7; // Show weekly data for 30 days
+          // For better visualization, we'll sample the data based on time range
+          let dataToShow;
+          if (timeRangeValue === "7") {
+            // For 7 days, show all daily data points (up to 7)
+            dataToShow = sortedData.slice(-7);
+          } else if (timeRangeValue === "30") {
+            // For 30 days, sample every ~4 days to get ~7-8 data points
+            const step = Math.max(1, Math.floor(sortedData.length / 8));
+            dataToShow = sortedData.filter((_, index) => index % step === 0 || index === sortedData.length - 1);
+            if (dataToShow.length > 8) dataToShow = dataToShow.slice(-8);
           } else if (timeRangeValue === "90") {
-            dataPointsToShow = 12; // Show weekly data for 90 days
+            // For 90 days, sample every ~7 days to get ~12-13 data points
+            const step = Math.max(1, Math.floor(sortedData.length / 13));
+            dataToShow = sortedData.filter((_, index) => index % step === 0 || index === sortedData.length - 1);
+            if (dataToShow.length > 13) dataToShow = dataToShow.slice(-13);
           } else if (timeRangeValue === "365") {
-            dataPointsToShow = 12; // Show monthly data for year
+            // For 365 days, sample monthly to get ~12 data points
+            const step = Math.max(1, Math.floor(sortedData.length / 12));
+            dataToShow = sortedData.filter((_, index) => index % step === 0 || index === sortedData.length - 1);
+            if (dataToShow.length > 12) dataToShow = dataToShow.slice(-12);
+          } else {
+            // Default: show last 4
+            dataToShow = sortedData.slice(-4);
           }
-          
-          // Take last N data points or all if less than N
-          const dataToShow = sortedData.length > dataPointsToShow 
-            ? sortedData.slice(-dataPointsToShow)
-            : sortedData;
           
           const processedData = dataToShow.map((item: any, index: number) => {
             const date = new Date(item.key);
@@ -255,7 +266,7 @@ export function ReportsPage() {
         if (result.ok) {
           toast.success("Report deleted successfully");
           loadSavedReports();
-        } else {
+    } else {
           toast.error("Failed to delete report");
         }
       } catch (error) {
@@ -469,9 +480,9 @@ export function ReportsPage() {
                     <div className="space-y-2 p-3 bg-muted rounded-lg border-2">
                       {availableSectors.length > 0 ? (
                         availableSectors.map((sector) => (
-                          <div key={sector} className="flex items-center gap-2">
-                            <Checkbox
-                              checked={selectedSectors.includes(sector)}
+                        <div key={sector} className="flex items-center gap-2">
+                          <Checkbox
+                            checked={selectedSectors.includes(sector)}
                               onCheckedChange={(checked) => {
                                 if (checked) {
                                   setSelectedSectors([...selectedSectors, sector]);
@@ -492,7 +503,7 @@ export function ReportsPage() {
                             >
                               {sector}
                             </label>
-                          </div>
+                        </div>
                         ))
                       ) : (
                         <p className="text-sm text-muted-foreground">Loading sectors...</p>
@@ -506,9 +517,9 @@ export function ReportsPage() {
                     <div className="space-y-2 p-3 bg-muted rounded-lg border-2 max-h-48 overflow-y-auto">
                       {availableKeywords.length > 0 ? (
                         availableKeywords.slice(0, 20).map((keyword) => (
-                          <div key={keyword} className="flex items-center gap-2">
-                            <Checkbox
-                              checked={selectedKeywords.includes(keyword)}
+                        <div key={keyword} className="flex items-center gap-2">
+                          <Checkbox
+                            checked={selectedKeywords.includes(keyword)}
                               onCheckedChange={(checked) => {
                                 if (checked) {
                                   setSelectedKeywords([...selectedKeywords, keyword]);
@@ -529,7 +540,7 @@ export function ReportsPage() {
                             >
                               {keyword}
                             </label>
-                          </div>
+                        </div>
                         ))
                       ) : (
                         <p className="text-sm text-muted-foreground">Loading keywords...</p>
