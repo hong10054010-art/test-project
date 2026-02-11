@@ -104,19 +104,33 @@ export function ReportsPage() {
         
         // Process time data for preview
         const timeData = response.charts.byTime || [];
-        const processedData = timeData.slice(-4).map((item: any) => {
-          const date = new Date(item.key);
-          return {
-            date: `Week ${Math.floor((date.getTime() - new Date(timeData[0].key).getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1}`,
-            value: item.count
-          };
-        });
-        setPreviewData(processedData.length > 0 ? processedData : [
-          { date: "Week 1", value: 0 },
-          { date: "Week 2", value: 0 },
-          { date: "Week 3", value: 0 },
-          { date: "Week 4", value: 0 }
-        ]);
+        if (timeData.length > 0) {
+          // Sort by date to ensure correct order
+          const sortedData = [...timeData].sort((a: any, b: any) => 
+            new Date(a.key).getTime() - new Date(b.key).getTime()
+          );
+          // Take last 4 data points or all if less than 4
+          const last4 = sortedData.slice(-4);
+          const firstDate = new Date(last4[0].key);
+          const processedData = last4.map((item: any, index: number) => {
+            const date = new Date(item.key);
+            // Calculate week number from the first date in the selection
+            const daysDiff = Math.floor((date.getTime() - firstDate.getTime()) / (24 * 60 * 60 * 1000));
+            const weekNum = Math.floor(daysDiff / 7) + 1;
+            return {
+              date: `Week ${weekNum}`,
+              value: item.count
+            };
+          });
+          setPreviewData(processedData);
+        } else {
+          setPreviewData([
+            { date: "Week 1", value: 0 },
+            { date: "Week 2", value: 0 },
+            { date: "Week 3", value: 0 },
+            { date: "Week 4", value: 0 }
+          ]);
+        }
       }
     } catch (error) {
       console.error("Failed to load report data:", error);
@@ -249,7 +263,7 @@ export function ReportsPage() {
                       placeholder="My Custom Report"
                       value={reportName}
                       onChange={(e) => setReportName(e.target.value)}
-                      className="border-2"
+                      className="border-2 bg-[#4d7c0f]/10"
                     />
                   </div>
 
@@ -257,7 +271,7 @@ export function ReportsPage() {
                   <div className="space-y-2">
                     <Label>Time Range</Label>
                     <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-                      <SelectTrigger className="border-2">
+                      <SelectTrigger className="border-2 bg-[#4d7c0f]/10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

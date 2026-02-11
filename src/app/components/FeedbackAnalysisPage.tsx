@@ -244,9 +244,19 @@ export function FeedbackAnalysisPage() {
   };
 
   const handleExport = () => {
+    // Export selected items if any, otherwise export all filtered feedback
+    const itemsToExport = selectedRows.length > 0 
+      ? filteredFeedback.filter(item => selectedRows.includes(item.id))
+      : filteredFeedback;
+    
+    if (itemsToExport.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    
     const csv = [
       ["ID", "Date", "User", "Source", "Sentiment", "Rating", "Category", "Tags", "Text"].join(","),
-      ...filteredFeedback.map(item => [
+      ...itemsToExport.map(item => [
         item.id,
         item.date,
         item.user,
@@ -266,7 +276,7 @@ export function FeedbackAnalysisPage() {
     a.download = `feedback-export-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Feedback exported successfully");
+    toast.success(`Exported ${itemsToExport.length} feedback item(s) successfully`);
   };
 
   const handleTagSelected = async () => {
@@ -311,7 +321,7 @@ export function FeedbackAnalysisPage() {
             placeholder="Search by ID, user, or content..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 border-2"
+            className="pl-10 border-2 bg-white"
           />
         </div>
         <div className="flex gap-2">
