@@ -112,12 +112,20 @@ export function KeywordsPage({ initialFilter }: KeywordsPageProps) {
 
         // Process platform/source data
         const platformData = response.charts.byPlatform || [];
+        // Map API source keys to display names
+        const sourceDisplayNames: { [key: string]: string } = {
+          "support_ticket": "Support Ticket",
+          "github_issue": "GitHub Issue",
+          "community_discord": "Community Discord",
+          "email_feedback": "Email",
+          "twitter": "Social Media"
+        };
         const processedSource = platformData.map((p: any) => ({
-          source: p.key,
+          source: sourceDisplayNames[p.key] || p.key,
           mentions: p.count,
           sentiment: Math.floor(Math.random() * 30) + 50
         }));
-        setSourceBreakdown(processedSource);
+        setSourceBreakdown(processedSource.length > 0 ? processedSource : []);
 
         // Process theme/keyword data
         const themeData = response.charts.byTheme || [];
