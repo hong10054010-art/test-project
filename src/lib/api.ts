@@ -33,6 +33,7 @@ export async function queryFeedback(filters: QueryFilters): Promise<QueryRespons
     if (filters.source) params.set('platform', filters.source);
     if (filters.product) params.set('product', filters.product);
     if (filters.country) params.set('country', filters.country);
+    if (filters.theme) params.set('theme', filters.theme);
 
     const response = await fetch(`${API_BASE}/query?${params.toString()}`);
     const data = await response.json();

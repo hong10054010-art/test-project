@@ -116,6 +116,11 @@ export function ReportsPage() {
         filters.product = selectedSectors.join(',');
       }
       
+      // Apply keyword/theme filter if any selected
+      if (selectedKeywords.length > 0) {
+        filters.theme = selectedKeywords.join(',');
+      }
+      
       const response = await queryFeedback(filters);
       if (response.ok && response.charts) {
         setReportData(response);
@@ -137,9 +142,23 @@ export function ReportsPage() {
           const sortedData = [...timeData].sort((a: any, b: any) => 
             new Date(a.key).getTime() - new Date(b.key).getTime()
           );
-          // Take last 4 data points or all if less than 4
-          const last4 = sortedData.slice(-4);
-          const processedData = last4.map((item: any, index: number) => {
+          
+          // Determine how many data points to show based on time range
+          let dataPointsToShow = 4; // Default for 7 days
+          if (timeRangeValue === "30") {
+            dataPointsToShow = 7; // Show weekly data for 30 days
+          } else if (timeRangeValue === "90") {
+            dataPointsToShow = 12; // Show weekly data for 90 days
+          } else if (timeRangeValue === "365") {
+            dataPointsToShow = 12; // Show monthly data for year
+          }
+          
+          // Take last N data points or all if less than N
+          const dataToShow = sortedData.length > dataPointsToShow 
+            ? sortedData.slice(-dataPointsToShow)
+            : sortedData;
+          
+          const processedData = dataToShow.map((item: any, index: number) => {
             const date = new Date(item.key);
             // Format date as "MM/DD" or use simple labels
             const month = date.getMonth() + 1;

@@ -3,6 +3,7 @@ export async function onRequestGet({ env, request }) {
   const source = url.searchParams.get("platform") || url.searchParams.get("source");
   const product = url.searchParams.get("product");
   const country = url.searchParams.get("country");
+  const theme = url.searchParams.get("theme"); // Support theme/keyword filtering
   const timeRange = url.searchParams.get("timeRange") || "30";
   
   // Calculate date range based on timeRange parameter
