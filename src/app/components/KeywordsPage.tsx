@@ -187,14 +187,14 @@ export function KeywordsPage({ initialFilter }: KeywordsPageProps) {
             placeholder="Search keywords..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 border-2 bg-white"
+            className="pl-10 border-2 bg-muted"
           />
         </div>
         <Select value={timeRange} onValueChange={(value) => {
           setTimeRange(value);
           loadKeywordData();
         }}>
-          <SelectTrigger className="w-full lg:w-[180px] border-2 bg-white">
+          <SelectTrigger className="w-full lg:w-[180px] border-2 bg-muted">
             <SelectValue placeholder="Time range" />
           </SelectTrigger>
           <SelectContent>
@@ -207,7 +207,7 @@ export function KeywordsPage({ initialFilter }: KeywordsPageProps) {
           setSectorFilter(value);
           loadKeywordData();
         }}>
-          <SelectTrigger className="w-full lg:w-[180px] border-2 bg-white">
+          <SelectTrigger className="w-full lg:w-[180px] border-2 bg-muted">
             <SelectValue placeholder="Sector" />
           </SelectTrigger>
           <SelectContent>

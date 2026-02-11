@@ -321,7 +321,7 @@ export function FeedbackAnalysisPage() {
             placeholder="Search by ID, user, or content..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 border-2 bg-white"
+            className="pl-10 border-2 bg-muted"
           />
         </div>
         <div className="flex gap-2">
