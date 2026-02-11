@@ -179,7 +179,7 @@ export function KeywordsPage({ initialFilter }: KeywordsPageProps) {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex flex-col lg:flex-row gap-4 keywords-filters">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -194,7 +194,7 @@ export function KeywordsPage({ initialFilter }: KeywordsPageProps) {
           setTimeRange(value);
           loadKeywordData();
         }}>
-          <SelectTrigger className="w-full lg:w-[180px] border-2 bg-muted">
+          <SelectTrigger className="w-full lg:w-[180px] border-2 !bg-muted">
             <SelectValue placeholder="Time range" />
           </SelectTrigger>
           <SelectContent>
@@ -207,7 +207,7 @@ export function KeywordsPage({ initialFilter }: KeywordsPageProps) {
           setSectorFilter(value);
           loadKeywordData();
         }}>
-          <SelectTrigger className="w-full lg:w-[180px] border-2 bg-muted">
+          <SelectTrigger className="w-full lg:w-[180px] border-2 !bg-muted">
             <SelectValue placeholder="Sector" />
           </SelectTrigger>
           <SelectContent>

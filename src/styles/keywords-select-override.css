@@ -1,0 +1,4 @@
+/* Force muted background for Keywords page selects */
+.keywords-filters [data-slot="select-trigger"] {
+  background-color: var(--muted) !important;
+}
