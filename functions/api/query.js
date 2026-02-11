@@ -141,11 +141,20 @@ export async function onRequestGet({ env, request }) {
     .bind(...args)
     .all();
 
-  // By Time (daily for the selected range)
+  // By Time (daily for the selected range) with sentiment score
   const byTime = await env.DB
     .prepare(
-      `SELECT date(r.created_at) AS key, COUNT(*) AS count
+      `SELECT 
+         date(r.created_at) AS key, 
+         COUNT(*) AS count,
+         AVG(CASE 
+           WHEN e.sentiment = 'positive' THEN 80
+           WHEN e.sentiment = 'neutral' THEN 50
+           WHEN e.sentiment = 'negative' THEN 20
+           ELSE 50
+         END) AS avg_sentiment_score
        FROM raw_feedback r
+       LEFT JOIN enriched_feedback e ON r.id = e.id
        ${whereSql}
        GROUP BY date(r.created_at)
        ORDER BY key ASC`

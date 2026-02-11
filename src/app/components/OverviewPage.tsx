@@ -63,10 +63,14 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
         const timeData = response.charts.byTime || [];
         const processedTrendData = timeData.map((item: any) => {
           const date = new Date(item.key);
+          // Use avg_sentiment_score from API, fallback to 50 if not available
+          const sentimentScore = item.avg_sentiment_score 
+            ? Math.round(item.avg_sentiment_score) 
+            : 50;
           return {
             date: `${date.getMonth() + 1}/${date.getDate()}`,
             mentions: item.count,
-            sentiment: 70 // TODO: Calculate from enriched data
+            sentiment: sentimentScore
           };
         });
         setTrendData(processedTrendData);
