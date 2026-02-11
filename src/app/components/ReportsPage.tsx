@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { FileText, Download, Eye, Calendar, Clock, BarChart3, FileBarChart, Plus, Save, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { queryFeedback, getSavedViews, saveView } from "../../lib/api";
+import { queryFeedback, getSavedViews, saveView, deleteView } from "../../lib/api";
 import { toast } from "sonner";
 
 const previewData = [
@@ -64,6 +64,7 @@ export function ReportsPage() {
   const [reportData, setReportData] = useState<any>(null);
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [savedReports, setSavedReports] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("builder");
 
   useEffect(() => {
     loadReportData();
@@ -207,10 +208,148 @@ export function ReportsPage() {
     toast.success("Report exported as CSV");
   };
 
-  const handleDeleteReport = (id: number) => {
+  const handleDeleteReport = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this report?")) {
-      toast.success("Report deleted");
-      // TODO: Implement delete API
+      try {
+        const result = await deleteView(id);
+        if (result.ok) {
+          toast.success("Report deleted successfully");
+          loadSavedReports();
+        } else {
+          toast.error("Failed to delete report");
+        }
+      } catch (error) {
+        toast.error("Failed to delete report");
+      }
+    }
+  };
+
+  const handleViewReport = async (report: any) => {
+    // Switch to Report Builder tab
+    setActiveTab("builder");
+    
+    // Load report filters
+    if (report.filters) {
+      if (report.filters.timeRange) {
+        const timeRange = report.filters.timeRange;
+        if (timeRange === "7") setSelectedTimeRange("last7");
+        else if (timeRange === "30") setSelectedTimeRange("last30");
+        else if (timeRange === "90") setSelectedTimeRange("last90");
+        else if (timeRange === "365") setSelectedTimeRange("ytd");
+      }
+      if (report.filters.sectors) {
+        setSelectedSectors(Array.isArray(report.filters.sectors) ? report.filters.sectors : []);
+      }
+      if (report.filters.keywords) {
+        setSelectedKeywords(Array.isArray(report.filters.keywords) ? report.filters.keywords : []);
+      }
+    }
+    
+    // Set report name
+    setReportName(report.name || "");
+    
+    toast.success(`Loaded report: ${report.name}`);
+  };
+
+  const handleDownloadReport = async (report: any) => {
+    try {
+      // Load report data based on filters
+      const timeRangeValue = report.filters?.timeRange || "30";
+      const response = await queryFeedback({ 
+        timeRange: timeRangeValue,
+        product: report.filters?.sectors?.[0] || undefined
+      });
+      
+      if (!response.ok) {
+        toast.error("Failed to load report data");
+        return;
+      }
+
+      // Generate PDF similar to Overview page
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast.error("Please allow popups to export PDF");
+        return;
+      }
+
+      const metrics = {
+        totalMentions: response.totalCount || 0,
+        positivePercent: 0,
+        negativePercent: 0
+      };
+
+      const sentimentData = response.charts?.bySentiment || [];
+      const positive = sentimentData.find((s: any) => s.key === 'positive')?.count || 0;
+      const negative = sentimentData.find((s: any) => s.key === 'negative')?.count || 0;
+      const neutral = sentimentData.find((s: any) => s.key === 'neutral')?.count || 0;
+      const totalWithSentiment = positive + negative + neutral;
+      
+      if (totalWithSentiment > 0) {
+        metrics.positivePercent = Math.round((positive / totalWithSentiment) * 100);
+        metrics.negativePercent = Math.round((negative / totalWithSentiment) * 100);
+      }
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${report.name || 'Report'} Export</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              h1 { color: #1a2e05; }
+              h2 { color: #4d7c0f; margin-top: 20px; }
+              .metric { background: #f7fee7; padding: 15px; border-radius: 8px; margin: 10px 0; }
+              table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+              th, td { border: 1px solid #d1e7b8; padding: 8px; text-align: left; }
+              th { background: #d1e7b8; color: #1a2e05; }
+            </style>
+          </head>
+          <body>
+            <h1>${report.name || 'Report'}</h1>
+            <p>Generated: ${new Date().toLocaleString()}</p>
+            <div class="metric">
+              <h2>Key Metrics</h2>
+              <p>Total Mentions: ${metrics.totalMentions.toLocaleString()}</p>
+              <p>Positive: ${metrics.positivePercent}%</p>
+              <p>Negative: ${metrics.negativePercent}%</p>
+            </div>
+            ${response.charts?.byTheme ? `
+              <h2>Top Themes</h2>
+              <table>
+                <tr><th>Theme</th><th>Count</th></tr>
+                ${response.charts.byTheme.slice(0, 10).map((t: any) => `
+                  <tr>
+                    <td>${t.key}</td>
+                    <td>${t.count}</td>
+                  </tr>
+                `).join('')}
+              </table>
+            ` : ''}
+            ${response.charts?.byPlatform ? `
+              <h2>By Platform</h2>
+              <table>
+                <tr><th>Platform</th><th>Count</th></tr>
+                ${response.charts.byPlatform.map((p: any) => `
+                  <tr>
+                    <td>${p.key}</td>
+                    <td>${p.count}</td>
+                  </tr>
+                `).join('')}
+              </table>
+            ` : ''}
+          </body>
+        </html>
+      `;
+
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      setTimeout(() => {
+        printWindow.print();
+        toast.success("PDF export ready");
+      }, 250);
+    } catch (error) {
+      console.error("Failed to download report:", error);
+      toast.error("Failed to download report");
     }
   };
 
@@ -221,7 +360,7 @@ export function ReportsPage() {
         <p className="text-muted-foreground mt-2">Build custom reports and manage scheduled exports</p>
       </div>
 
-      <Tabs defaultValue="builder" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-muted p-1">
           <TabsTrigger 
             value="builder"
@@ -544,10 +683,22 @@ export function ReportsPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="border-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-2"
+                      onClick={() => handleViewReport(report)}
+                      title="View Report"
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" className="border-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-2"
+                      onClick={() => handleDownloadReport(report)}
+                      title="Download PDF"
+                    >
                       <Download className="h-4 w-4" />
                     </Button>
                     <Button 
@@ -555,6 +706,7 @@ export function ReportsPage() {
                       size="sm" 
                       className="border-2 text-[#ef4444] hover:text-[#ef4444]"
                       onClick={() => handleDeleteReport(report.id)}
+                      title="Delete Report"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

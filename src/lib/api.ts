@@ -98,6 +98,18 @@ export async function getSavedViews() {
   }
 }
 
+export async function deleteView(viewId: string) {
+  try {
+    const response = await fetch(`${API_BASE}/save-view?id=${viewId}`, {
+      method: 'DELETE'
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Delete View Error:', error);
+    return { ok: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
 export interface GitHubConnection {
   connected: boolean;
   repo: string;
